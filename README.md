@@ -75,7 +75,7 @@ atalaya/
 ## Prerequisites
 
 - Node.js 22+
-- Wrangler CLI
+- [Wrangler](https://developers.cloudflare.com/workers/wrangler/install-and-update/) CLI
 
 ## Setup
 
