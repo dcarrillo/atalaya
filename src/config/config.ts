@@ -13,10 +13,10 @@ function interpolateEnv(content: string, envVars: Record<string, string | undefi
 
 function applyDefaults(raw: RawYamlConfig): Config {
   const settings: Settings = {
-    defaultRetries: raw.settings?.default_retries ?? 0,
-    defaultRetryDelayMs: raw.settings?.default_retry_delay_ms ?? 0,
-    defaultTimeoutMs: raw.settings?.default_timeout_ms ?? 0,
-    defaultFailureThreshold: raw.settings?.default_failure_threshold ?? 0,
+    defaultRetries: raw.settings?.default_retries ?? 2,
+    defaultRetryDelayMs: raw.settings?.default_retry_delay_ms ?? 1000,
+    defaultTimeoutMs: raw.settings?.default_timeout_ms ?? 5000,
+    defaultFailureThreshold: raw.settings?.default_failure_threshold ?? 2,
     title: raw.settings?.title ?? 'Atalaya Uptime Monitor',
   };
 
