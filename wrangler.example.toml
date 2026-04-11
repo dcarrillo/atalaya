@@ -29,7 +29,7 @@ new_sqlite_classes = ["RegionalChecker"]
 [vars]
 MONITORS_CONFIG = """
 settings:
-  title: 'Atalaya Uptime Monitor'
+  title: "Atalaya Uptime Monitor"
   default_retries: 3
   default_retry_delay_ms: 1000
   default_timeout_ms: 5000
