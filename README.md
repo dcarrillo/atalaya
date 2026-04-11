@@ -317,6 +317,9 @@ curl "http://localhost:8787/__scheduled?cron=*+*+*+*+*"
 ### Testing
 
 ```bash
+# Fist build the status page
+npm run build:pages
+
 # Worker tests
 npm run test
 
@@ -326,12 +329,6 @@ npm run test:pages
 # Type checking and linting
 npm run check              # worker
 npm run check:pages        # pages (astro check + tsc)
-```
-
-### Building
-
-```bash
-npm run build:pages        # Build Astro site to status-page/dist/
 ```
 
 ## TODO
