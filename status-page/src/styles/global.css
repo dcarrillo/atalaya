@@ -1,0 +1,144 @@
+/* Import design tokens */
+@import './tokens.css';
+
+/* Map legacy variable names to new token names for backward compatibility */
+:root {
+  --radius: var(--radius-md);
+  --radius-sm: var(--radius-sm);
+  --radius-inner: var(--radius-xs);
+  --transition: var(--transition-normal);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: var(--leading-relaxed);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings:
+    'tnum' 1,
+    'ss01' 1,
+    'cv05' 1; /* Alternate 1 for better readability */
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(circle at 10% 20%, oklch(70% 0.25 240 / 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, oklch(70% 0.25 145 / 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, oklch(70% 0.25 25 / 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.8;
+}
+
+[data-theme='dark'] body::before {
+  background-image:
+    radial-gradient(circle at 10% 20%, oklch(75% 0.3 235 / 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, oklch(80% 0.3 145 / 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, oklch(75% 0.35 25 / 0.08) 0%, transparent 60%);
+  opacity: 0.9;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+code,
+.monitor-uptime {
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+code,
+.monitor-uptime {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-inner);
+}
+
+/* Chart loading states */
+.chart-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-inset);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.chart-loading-spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: chart-spin 1s linear infinite;
+}
+
+@keyframes chart-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-loading-spinner {
+    animation: none;
+    border-top-color: transparent;
+  }
+}
+
+/* uPlot drag-select highlight */
+.u-select {
+  background: rgba(59, 130, 246, 0.15) !important;
+  border-left: 1px solid rgba(59, 130, 246, 0.4);
+  border-right: 1px solid rgba(59, 130, 246, 0.4);
+}

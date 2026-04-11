@@ -1,0 +1,123 @@
+name = "atalaya"
+main = "src/index.ts"
+compatibility_date = "2026-03-17"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+
+[assets]
+directory = "./status-page/dist/client/"
+binding = "ASSETS"
+run_worker_first = true
+
+[triggers]
+crons = ["* * * * *", "0 * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "atalaya"
+database_id = "xxxxxxxx-yyyy-xxxx-iiii-jjjjjjjjjjjj"
+migrations_dir = "./migrations"
+
+[[durable_objects.bindings]]
+name = "REGIONAL_CHECKER_DO"
+class_name = "RegionalChecker"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RegionalChecker"]
+
+[vars]
+MONITORS_CONFIG = """
+settings:
+  title: 'Atalaya Uptime Monitor'
+  default_retries: 3
+  default_retry_delay_ms: 1000
+  default_timeout_ms: 5000
+  default_failure_threshold: 2
+
+alerts:
+  - name: "telegram"
+    type: webhook
+    url: "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
+    method: POST
+    headers:
+      Content-Type: application/json
+    body_template: |
+      {
+         "chat_id": "${TELEGRAM_CHAT_ID}",
+         "text": "{{monitor.name}} transitioned from status {{status.previous}} to status {{status.current}} {{check.error}}"
+      }
+
+  - name: "default"
+    type: webhook
+    url: "https://notify.service.com/do"
+    method: POST
+    headers:
+      Authorization: "Bearer ${AUTH_TOKEN}"   # AUTH_TOKEN must be defined as secret in Cloudflare
+      Content-Type: "application/json"
+    body_template: |
+      {
+        "event": "{{event}}",
+        "monitor": {
+          "name": "{{monitor.name}}",
+          "type": "{{monitor.type}}",
+          "target": "{{monitor.target}}"
+        },
+        "status": {
+          "current": "{{status.current}}",
+          "previous": "{{status.previous}}",
+          "consecutive_failures": "{{status.consecutive_failures}}",
+          "last_status_change": "{{status.last_status_change}}",
+          "downtime_duration_seconds": "{{status.downtime_duration_seconds}}"
+        },
+        "check": {
+          "timestamp": "{{check.timestamp}}",
+          "response_time_ms": "{{check.response_time_ms}}",
+          "attempts": "{{check.attempts}}",
+          "error": "{{check.error}}"
+        }
+      }
+
+monitors:
+  - name: "private-http"
+    type: http
+    target: "https://httpstat.us/200"
+    method: GET
+    expected_status: 200
+    timeout_ms: 1000
+    headers:
+      Authorization: "Basic ${BASIC_AUTH}"    # BASIC_AUTH must be defined as secret in Cloudflare
+    alerts: ["default"]
+
+  # Regional monitoring examples
+  # Run checks from specific Cloudflare regions
+  # Valid region codes: weur (Western Europe), enam (Eastern North America),
+  # wnam (Western North America), apac (Asia Pacific), eeur (Eastern Europe),
+  # oc (Oceania), safr (South Africa), me (Middle East), sam (South America)
+  - name: "example-eu"
+    type: http
+    target: "https://httpstat.us/200"
+    region: "weur"  # Run from Western Europe
+    method: GET
+    expected_status: 200
+    timeout_ms: 10000
+    alerts: ["default"]
+
+  - name: "example-us"
+    type: http
+    target: "https://httpstat.us/200"
+    region: "enam"  # Run from Eastern North America
+    method: GET
+    expected_status: 200
+    timeout_ms: 10000
+    alerts: ["default"]
+"""
+
+# optional
+[[routes]]
+pattern = "custom.domain.com"  # must exist in cloudflare
+custom_domain = true
+
+# optional
+[observability]
+enabled = true

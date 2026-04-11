@@ -1,0 +1,182 @@
+/* Design Tokens for Atalaya Status Page */
+/* Using OKLCH for perceptual uniformity and modern CSS features */
+
+:root {
+  /* Spacing scale (4pt base) */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+  --space-20: 5rem; /* 80px */
+  --space-24: 6rem; /* 96px */
+
+  /* Semantic spacing tokens */
+  --space-xs: var(--space-1);
+  --space-sm: var(--space-2);
+  --space-md: var(--space-3);
+  --space-lg: var(--space-4);
+  --space-xl: var(--space-6);
+  --space-2xl: var(--space-8);
+  --space-3xl: var(--space-12);
+  --space-4xl: var(--space-16);
+
+  /* Border radius */
+  --radius-xs: 0.25rem; /* 4px */
+  --radius-sm: 0.5rem; /* 8px */
+  --radius-md: 0.75rem; /* 12px */
+  --radius-lg: 1rem; /* 16px */
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-mono: 'Geist Mono', 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Font sizes (rem-based for accessibility, 1.333 ratio - perfect fourth) */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 2rem; /* 32px */
+  --text-4xl: 2.667rem; /* 42.67px */
+  --text-5xl: 3.556rem; /* 56.89px */
+  --text-6xl: 4.741rem; /* 75.86px */
+
+  /* Font weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Line heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+/* Light theme color tokens */
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  /* Surface colors */
+  --bg: oklch(99% 0.005 250); /* Near white, tinted slightly blue */
+  --bg-card: oklch(98% 0.005 250); /* Slightly darker for cards */
+  --bg-inset: oklch(96% 0.005 250); /* Even darker for inset elements */
+
+  /* Border colors */
+  --border: oklch(85% 0.01 250); /* Light borders */
+  --border-subtle: oklch(90% 0.005 250); /* Very subtle borders */
+
+  /* Text colors */
+  --text: oklch(20% 0.02 250); /* Dark text - higher contrast */
+  --text-muted: oklch(40% 0.015 250); /* Muted text - better contrast */
+  --text-dim: oklch(50% 0.01 250); /* Dim text - improved contrast */
+
+  /* Status colors - more vibrant and distinctive */
+  --up: oklch(70% 0.25 145); /* Vibrant green - operational */
+  --up-glow: oklch(70% 0.25 145 / 0.5);
+  --up-bg: oklch(70% 0.25 145 / 0.12);
+
+  --down: oklch(65% 0.3 25); /* Vibrant red - down */
+  --down-glow: oklch(65% 0.3 25 / 0.5);
+  --down-bg: oklch(65% 0.3 25 / 0.12);
+
+  --degraded: oklch(70% 0.25 75); /* Vibrant amber - degraded */
+  --degraded-bg: oklch(70% 0.25 75 / 0.12);
+
+  --unknown: oklch(65% 0.1 250); /* Distinctive gray-blue - unknown */
+  --unknown-glow: oklch(65% 0.1 250 / 0.4);
+  --unknown-bg: oklch(65% 0.1 250 / 0.12);
+
+  --no-data: oklch(75% 0.05 250); /* Tinted gray for no data */
+
+  /* Accent color - more vibrant */
+  --accent: oklch(70% 0.25 240); /* Vibrant blue accent */
+  --accent-gradient: oklch(70% 0.25 270); /* Purple-blue for gradient */
+
+  /* Shadows (lighter in light mode) */
+  --shadow: 0 4px 20px rgb(0 0 0 / 0.08);
+  --shadow-hover: 0 8px 30px rgb(0 0 0 / 0.12);
+  --shadow-inset: inset 0 1px 0 rgb(0 0 0 / 0.05);
+}
+
+/* Dark theme color tokens */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Surface colors */
+  --bg: oklch(15% 0.02 250); /* Dark background */
+  --bg-card: oklch(20% 0.02 250); /* Slightly lighter for cards */
+  --bg-inset: oklch(18% 0.02 250); /* Darker for inset elements */
+
+  /* Border colors */
+  --border: oklch(30% 0.02 250); /* Dark borders */
+  --border-subtle: oklch(25% 0.02 250); /* Subtle borders */
+
+  /* Text colors */
+  --text: oklch(98% 0.01 250); /* Light text - higher contrast */
+  --text-muted: oklch(85% 0.01 250); /* Muted text - better contrast */
+  --text-dim: oklch(70% 0.01 250); /* Dim text - improved contrast */
+
+  /* Status colors - more vibrant in dark mode */
+  --up: oklch(80% 0.3 145); /* Very vibrant green */
+  --up-glow: oklch(80% 0.3 145 / 0.6);
+  --up-bg: oklch(80% 0.3 145 / 0.15);
+
+  --down: oklch(75% 0.35 25); /* Very vibrant red */
+  --down-glow: oklch(75% 0.35 25 / 0.6);
+  --down-bg: oklch(75% 0.35 25 / 0.15);
+
+  --degraded: oklch(80% 0.3 75); /* Very vibrant amber */
+  --degraded-bg: oklch(80% 0.3 75 / 0.15);
+
+  --unknown: oklch(75% 0.15 240); /* Distinctive blue-gray */
+  --unknown-glow: oklch(75% 0.15 240 / 0.5);
+  --unknown-bg: oklch(75% 0.15 240 / 0.15);
+
+  --no-data: oklch(50% 0.08 240); /* Tinted gray-blue for no data */
+
+  /* Accent color - more vibrant */
+  --accent: oklch(75% 0.3 235); /* Very vibrant blue accent */
+  --accent-gradient: oklch(75% 0.3 265); /* Purple-blue for gradient */
+
+  /* Shadows (darker in dark mode) */
+  --shadow: 0 4px 32px rgb(0 0 0 / 0.25);
+  --shadow-hover: 0 8px 48px rgb(0 0 0 / 0.35);
+  --shadow-inset: inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+
+/* System preference detection */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    /* Dark theme variables will be applied via [data-theme="dark"] cascade */
+  }
+}
+
+/* Ensure smooth transitions for theme changes */
+* {
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal);
+}

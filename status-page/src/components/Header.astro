@@ -1,0 +1,317 @@
+---
+interface Props {
+  summary: {
+    total: number;
+    operational: number;
+    down: number;
+  };
+  lastUpdated: number;
+  title: string;
+}
+
+const { summary, lastUpdated, title } = Astro.props;
+
+function formatAbsoluteTime(unixTimestamp: number): string {
+  const date = new Date(unixTimestamp * 1000);
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZoneName: 'short'
+  });
+}
+
+const absoluteTime = formatAbsoluteTime(lastUpdated);
+---
+
+<header class="header">
+  <div class="header-top">
+    <h1>{title}</h1>
+    <button class="theme-toggle" aria-label="Toggle theme" title="Toggle light/dark theme">
+      <svg class="theme-icon sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <svg class="theme-icon moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </div>
+  <div class="header-updated">
+    <span class="pulse-dot"></span>
+    Updated {absoluteTime}
+  </div>
+  <div class="summary-counts">
+    <span class="count-pill count-up">
+      <span class="count-dot count-dot-up"></span>
+      {summary.operational} Operational
+    </span>
+    {summary.down > 0 && (
+      <span class="count-pill count-down">
+        <span class="count-dot count-dot-down"></span>
+        {summary.down} Down
+      </span>
+    )}
+  </div>
+</header>
+
+<script>
+  // Theme toggle functionality
+  (function() {
+    const toggle = document.querySelector('.theme-toggle');
+    if (!toggle) return;
+    
+    toggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const newTheme = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('atalaya-theme', newTheme);
+    });
+  })();
+</script>
+
+<style>
+  .header {
+    text-align: center;
+    margin-bottom: var(--space-12);
+    position: relative;
+  }
+
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: calc(var(--space-8) * -1);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    border-radius: var(--radius-full);
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-md);
+    position: relative;
+  }
+
+  h1 {
+    font-size: var(--text-4xl);
+    font-weight: var(--font-bold);
+    margin: 0;
+    font-feature-settings: 'case' 1;
+    letter-spacing: -0.03em;
+    line-height: var(--leading-tight);
+    color: var(--accent); /* Fallback for browsers that don't support background-clip */
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-gradient) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Fallback for browsers that don't support background-clip: text */
+  @supports not (background-clip: text) {
+    h1 {
+      background: none;
+      -webkit-text-fill-color: initial;
+    }
+  }
+
+  .theme-toggle {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    width: 2.25rem; /* 36px - smaller but still accessible */
+    height: 2.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text);
+    transition: var(--transition-normal);
+    position: absolute;
+    right: 0;
+  }
+
+  .theme-toggle:hover {
+    border-color: var(--accent);
+    background: var(--bg-inset);
+  }
+
+  .theme-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .theme-icon {
+    transition: opacity var(--transition-normal), transform var(--transition-normal);
+  }
+
+  .theme-icon.moon {
+    position: absolute;
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  .theme-icon.sun {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  [data-theme="dark"] .theme-icon.moon {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  [data-theme="dark"] .theme-icon.sun {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  .header-updated {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+    letter-spacing: 0.02em;
+    font-family: var(--font-family-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pulse-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: var(--up);
+    box-shadow: 0 0 0.375rem var(--up-glow);
+    flex-shrink: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .pulse-dot {
+      animation: pulse 2s ease-in-out infinite;
+    }
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+
+  .summary-counts {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+  }
+
+  .count-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-1) var(--space-md);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    font-family: var(--font-family-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    border-radius: var(--radius-full);
+  }
+
+  .count-up {
+    background: var(--up-bg);
+    color: var(--up);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+  }
+
+  .count-down {
+    background: var(--down-bg);
+    color: var(--down);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+  }
+
+  .count-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .count-dot-up {
+    background: var(--up);
+  }
+
+  .count-dot-down {
+    background: var(--down);
+  }
+
+  /* Mobile styles */
+  @media (max-width: 640px) {
+    .header-top {
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+
+    h1 {
+      font-size: var(--text-2xl);
+    }
+
+    .theme-toggle {
+      width: 2rem;
+      height: 2rem;
+      right: -0.5rem; /* Adjust position for mobile */
+    }
+
+    .header-updated {
+      font-size: var(--text-xs);
+      margin-bottom: var(--space-4);
+    }
+
+    .summary-counts {
+      gap: var(--space-2);
+    }
+
+    .count-pill {
+      padding: var(--space-1) var(--space-2);
+      font-size: var(--text-xs);
+    }
+  }
+
+  /* Extra small screens */
+  @media (max-width: 375px) {
+    h1 {
+      font-size: var(--text-xl);
+    }
+
+    .summary-counts {
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .count-pill {
+      width: 100%;
+      max-width: 200px;
+      justify-content: center;
+    }
+  }
+</style>
