@@ -122,12 +122,30 @@ atalaya/
 
 ### Settings
 
+Default values:
+
 ```yaml
 settings:
-  default_retries: 3 # Retry attempts on failure
+  title: 'Atalaya Uptime Monitor' # Status page title
+  default_retries: 2 # Retry attempts on failure
   default_retry_delay_ms: 1000 # Delay between retries
   default_timeout_ms: 5000 # Request timeout
   default_failure_threshold: 2 # Failures before alerting
+```
+
+### Per-Monitor Overrides
+
+Each monitor can override the global default_* settings:
+
+```yaml
+- name: 'critical-api'
+  type: http
+  target: 'https://api.example.com/health'
+  timeout_ms: 10000 # Override global check_timeout_ms
+  retries: 3 # Override global check_retries
+  retry_delay_ms: 500 # Override global check_retry_delay_ms
+  failure_threshold: 1 # Override global check_failure_threshold
+  alerts: ['alert']
 ```
 
 ### Monitor Types
