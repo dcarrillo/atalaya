@@ -28,7 +28,7 @@
     "format:pages:check": "prettier --check \"src/**/*.ts\" \"status-page/src/**/*.ts\""
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240208.0",
+    "@cloudflare/workers-types": "^4.20260411.1",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.5.2",
     "@typescript-eslint/parser": "^8.58.1",
