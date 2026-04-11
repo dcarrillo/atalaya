@@ -1,0 +1,221 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import MonitorCard from '../components/MonitorCard.astro';
+import Footer from '../components/Footer.astro';
+import { getStatusApiData } from '../lib/api.js';
+import { parseConfig } from '../../../src/config/index.js';
+import { interpolateSecrets } from '../../../src/utils/interpolate.js';
+import { env } from 'cloudflare:workers';
+
+let data: Awaited<ReturnType<typeof getStatusApiData>> | null = null;
+let error: Error | null = null;
+
+try {
+  // TypeScript doesn't know about MONITORS_CONFIG in cloudflare:workers env
+  const envAny = env as any;
+  const monitorsConfig = envAny.MONITORS_CONFIG;
+  if (typeof monitorsConfig !== 'string' || !monitorsConfig) {
+    throw new Error('MONITORS_CONFIG environment variable is not set or is not a string');
+  }
+  const configYaml = interpolateSecrets(monitorsConfig, envAny);
+  const config = parseConfig(configYaml);
+  data = await getStatusApiData(env.DB, config);
+} catch (err) {
+  console.error('Failed to fetch status data:', err);
+  error = err as Error;
+}
+
+// Sort: down monitors first, then unknown, then up
+const sortOrder = { down: 0, unknown: 1, up: 2 } as const;
+const sortedMonitors = data ? [...data.monitors].sort(
+  (a, b) => (sortOrder[a.status] ?? 1) - (sortOrder[b.status] ?? 1)
+) : [];
+---
+
+<Layout title={data!.title}>
+  <main id="main-content" class="container">
+    {error ? (
+      <div class="error-state">
+        <div class="error-icon">⚠️</div>
+        <h2>Service Temporarily Unavailable</h2>
+        <p>We're having trouble loading status data. Please try again in a moment.</p>
+        <button class="retry-button" onclick="window.location.reload()" aria-label="Retry loading status data">Retry</button>
+      </div>
+    ) : !data ? (
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading status data...</p>
+      </div>
+    ) : data!.monitors.length === 0 ? (
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h2>No Monitors Configured</h2>
+        <p>Add monitors to start tracking your services.</p>
+      </div>
+    ) : (
+        <>
+        <Header summary={data!.summary} lastUpdated={data!.lastUpdated} title={data!.title} />
+        <div class="monitors">
+          {sortedMonitors.map(monitor => <MonitorCard monitor={monitor} />)}
+        </div>
+      </>
+    )}
+    <Footer />
+  </main>
+</Layout>
+
+<style>
+  .container {
+    max-width: min(1000px, 90vw);
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6);
+    position: relative;
+  }
+
+  .container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      linear-gradient(var(--border-subtle) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  [data-theme='dark'] .container::before {
+    background-image: 
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    opacity: 0.1;
+  }
+
+  .monitors {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .container {
+      padding: var(--space-16) var(--space-12) var(--space-20);
+    }
+    
+    .monitors {
+      gap: var(--space-5);
+    }
+  }
+
+  .error-state,
+  .loading-state,
+  .empty-state {
+    text-align: center;
+    padding: var(--space-20) var(--space-5);
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin-bottom: var(--space-8);
+  }
+
+  .error-icon,
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 24px;
+    opacity: 0.8;
+  }
+
+  .error-state h2,
+  .empty-state h2 {
+    font-size: 24px;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+  .error-state p,
+  .empty-state p,
+  .loading-state p {
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    max-width: min(400px, 90vw);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .retry-button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .retry-button:hover {
+    background: color-mix(in oklch, var(--accent), white 20%);
+  }
+
+  .retry-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .retry-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .retry-button:active {
+      transform: translateY(0);
+    }
+  }
+
+  .loading-spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    margin: 0 auto var(--space-6);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .loading-spinner {
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 640px) {
+    .container {
+      padding: var(--space-5) var(--space-4);
+    }
+    
+    .error-state,
+    .loading-state,
+    .empty-state {
+      padding: var(--space-12) var(--space-4);
+    }
+    
+    .error-icon,
+    .empty-icon {
+      font-size: 2.25rem;
+    }
+    
+    .error-state h2,
+    .empty-state h2 {
+      font-size: var(--text-xl);
+    }
+  }
+</style>

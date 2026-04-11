@@ -1,0 +1,325 @@
+---
+import type { ApiMonitorStatus } from '@worker/types';
+import UptimeBars from './UptimeBars.astro';
+
+interface Props {
+  monitor: ApiMonitorStatus;
+}
+
+const { monitor } = Astro.props;
+
+const uptimeFormatted = monitor.uptimePercent.toFixed(2);
+
+function formatLastChecked(timestamp: number | undefined): string {
+  if (timestamp == null) return 'Never';
+  const now = Math.floor(Date.now() / 1000);
+  const diffSeconds = now - timestamp;
+
+  if (diffSeconds < 60) return '';
+  if (diffSeconds < 3600) {
+    const minutes = Math.floor(diffSeconds / 60);
+    return `${minutes}m ago`;
+  }
+  if (diffSeconds < 86400) {
+    const hours = Math.floor(diffSeconds / 3600);
+    return `${hours}h ago`;
+  }
+  const days = Math.floor(diffSeconds / 86400);
+  return `${days}d ago`;
+}
+
+const lastCheckedText = formatLastChecked(monitor.lastChecked);
+
+const chartData = JSON.stringify({
+  timestamps: monitor.recentChecks.map(c => c.timestamp),
+  responseTimes: monitor.recentChecks.map(c => c.responseTimeMs),
+  statuses: monitor.recentChecks.map(c => c.status),
+});
+---
+
+<article class="monitor-card" aria-labelledby={`monitor-${monitor.name.replace(/\s+/g, '-').toLowerCase()}-title`}>
+  <div class="monitor-head">
+    <div
+      class:list={['status-dot', `status-dot-${monitor.status}`]}
+      role="status"
+      aria-label={`Status: ${monitor.status === 'up' ? 'Operational' : monitor.status === 'down' ? 'Down' : 'Unknown'}`}
+      title={`${monitor.status === 'up' ? 'Operational' : monitor.status === 'down' ? 'Down' : 'Unknown'}`}
+    ></div>
+    <h3 class="monitor-name" id={`monitor-${monitor.name.replace(/\s+/g, '-').toLowerCase()}-title`} title={monitor.name}>{monitor.name}</h3>
+    <span class:list={['monitor-uptime', `uptime-${monitor.status}`]}>{uptimeFormatted}%</span>
+    <span class="monitor-meta">{lastCheckedText}</span>
+  </div>
+
+  <UptimeBars dailyHistory={monitor.dailyHistory} />
+
+  <div class="chart-section">
+    <div class="chart-labels">
+      <span class="section-label">Response time</span>
+      <span class="section-label">24h</span>
+    </div>
+    <div class="chart-container" data-monitor={monitor.name}>
+      <script is:inline type="application/json" set:html={chartData} />
+    </div>
+  </div>
+</article>
+
+<style>
+  .monitor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    transition: all var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .monitor-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-4px);
+  }
+
+  .monitor-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+  }
+
+  .monitor-card:hover::before {
+    opacity: 1;
+  }
+
+
+
+  .monitor-card.status-down {
+    /* Status indicated by status dot and uptime color */
+  }
+
+  .monitor-card.status-unknown {
+    /* Status indicated by status dot and uptime color */
+  }
+
+  .monitor-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+  }
+
+  .status-dot {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+    border: 2px solid transparent;
+  }
+
+  .status-dot::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    opacity: 0.3;
+    z-index: -1;
+  }
+
+  .status-dot-up {
+    background: var(--up);
+    box-shadow: 0 0 16px var(--up-glow), 0 0 32px var(--up-glow);
+  }
+
+  .status-dot-up::after {
+    background: var(--up);
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .status-dot-down {
+    background: var(--down);
+    box-shadow: 0 0 16px var(--down-glow), 0 0 32px var(--down-glow);
+  }
+
+  .status-dot-down::after {
+    background: var(--down);
+    animation: pulse-glow 1.5s ease-in-out infinite;
+  }
+
+  .status-dot-unknown {
+    background: var(--unknown);
+    box-shadow: 0 0 16px var(--unknown-glow), 0 0 32px var(--unknown-glow);
+  }
+
+  .status-dot-unknown::after {
+    background: var(--unknown);
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 0.3;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+  }
+
+  .monitor-name {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text);
+    word-break: break-word;
+    letter-spacing: -0.01em;
+    line-height: var(--leading-tight);
+  }
+
+  .monitor-uptime {
+    margin-left: auto;
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-family-mono);
+    line-height: var(--leading-tight);
+  }
+
+  .uptime-up {
+    color: var(--up);
+  }
+
+  .uptime-down {
+    color: var(--down);
+  }
+
+  .uptime-unknown {
+    color: var(--unknown);
+  }
+
+  .monitor-meta {
+    font-size: var(--text-xs);
+    color: var(--text-dim);
+    margin-left: var(--space-md);
+    flex-shrink: 0;
+    font-family: var(--font-family-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .chart-section {
+    /* last element, no bottom margin */
+  }
+
+  .chart-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--space-xs);
+  }
+
+  .section-label {
+    font-size: var(--text-xs);
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: var(--font-family-mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--font-medium);
+  }
+
+    .chart-container {
+      width: 100%;
+      height: 7.5rem;
+      background: var(--bg-inset);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      touch-action: pan-y; /* Allow vertical scrolling only */
+      position: relative; /* For loading overlay positioning */
+    }
+
+  @media (max-width: 640px) {
+    .monitor-card {
+      padding: var(--space-4);
+    }
+
+    .monitor-head {
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .status-dot {
+      width: 1.25rem;
+      height: 1.25rem;
+      order: -1; /* Move status dot to beginning */
+    }
+
+    .status-dot::after {
+      width: 1.875rem;
+      height: 1.875rem;
+    }
+
+    .monitor-name {
+      font-size: var(--text-sm);
+      flex: 1;
+      min-width: 0; /* Allow text truncation */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .monitor-uptime {
+      font-size: var(--text-lg);
+      margin-left: 0;
+      width: 100%;
+      order: 1; /* Move uptime to after name */
+      text-align: right;
+      margin-top: var(--space-1);
+    }
+
+    .monitor-meta {
+      display: none;
+    }
+
+    .chart-container {
+      height: 5rem;
+      margin-top: var(--space-3);
+      position: relative; /* For loading overlay positioning */
+    }
+
+    .chart-labels {
+      font-size: var(--text-xs);
+    }
+  }
+
+  /* Extra small screens (320px - 375px) */
+  @media (max-width: 375px) {
+    .monitor-card {
+      padding: var(--space-3);
+    }
+
+    .monitor-name {
+      font-size: var(--text-sm);
+    }
+
+    .monitor-uptime {
+      font-size: var(--text-base);
+    }
+
+    .chart-container {
+      height: 4rem;
+      position: relative; /* For loading overlay positioning */
+    }
+  }
+</style>

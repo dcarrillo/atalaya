@@ -1,0 +1,147 @@
+---
+import type { ApiDayStatus } from '@worker/types';
+
+interface Props {
+  dailyHistory: ApiDayStatus[];
+}
+
+const { dailyHistory } = Astro.props;
+
+function getBarColor(uptimePercent: number | undefined): string {
+  if (uptimePercent == null) return 'no-data';
+  if (uptimePercent >= 99.8) return 'up';
+  if (uptimePercent >= 95) return 'degraded';
+  return 'down';
+}
+---
+
+<div class="uptime-section">
+  <div class="section-label">90-day uptime</div>
+  <div class="uptime-bars">
+    {
+      dailyHistory.map(day => {
+        const color = getBarColor(day.uptimePercent);
+        const tooltip =
+          day.uptimePercent == null
+            ? `${day.date}: No data`
+            : `${day.date}: ${day.uptimePercent.toFixed(1)}%`;
+        return (
+          <div
+            class:list={['bar', `bar-${color}`]}
+            data-tooltip={tooltip}
+            aria-label={tooltip}
+            role="img"
+            tabindex="0"
+          />
+        );
+      })
+    }
+  </div>
+  <div class="bar-labels">
+    <span>90d ago</span>
+    <span>Today</span>
+  </div>
+</div>
+
+<style>
+  .uptime-section {
+    margin-bottom: 12px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  .uptime-bars {
+    display: flex;
+    gap: 1px;
+    width: 100%;
+    height: 14px;
+  }
+
+  .bar {
+    flex: 1;
+    border-radius: 2px;
+    opacity: 0.65;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    cursor: help;
+    position: relative;
+  }
+
+  .bar:hover {
+    opacity: 1;
+    transform: scaleY(1.3);
+  }
+
+  .bar-up {
+    background: var(--up);
+  }
+
+  .bar-degraded {
+    background: var(--degraded);
+  }
+
+  .bar-down {
+    background: var(--down);
+  }
+
+  .bar-no-data {
+    background: var(--no-data);
+  }
+
+  /* Tooltip */
+  .bar::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    background: var(--text);
+    color: var(--bg);
+    padding: 4px 8px;
+    border-radius: var(--radius-inner);
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .bar::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-2px);
+    border: 4px solid transparent;
+    border-top-color: var(--text);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .bar:hover::before,
+  .bar:focus::before,
+  .bar:hover::after,
+  .bar:focus::after {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-top: 3px;
+  }
+</style>

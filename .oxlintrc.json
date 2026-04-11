@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "import", "unicorn"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "pedantic": "warn"
+  },
+  "ignorePatterns": [
+    "status-page/**",
+    "node_modules/**",
+    "dist/**"
+  ],
+  "rules": {
+    "no-unused-vars": "off",
+    "typescript/no-unused-vars": "warn",
+    "typescript/no-floating-promises": "error",
+    "no-inline-comments": "off",
+    "max-lines-per-function": "off",
+    "require-await": "off",
+    "import/no-named-as-default-member": "off",
+    "import/max-dependencies": "off"
+  },
+  "overrides": [
+    {
+      "files": ["*.test.ts", "*.spec.ts", "test-*.ts"],
+      "rules": {
+        "typescript/no-explicit-any": "off",
+        "unicorn/consistent-function-scoping": "off",
+        "unicorn/no-useless-undefined": "off",
+        "typescript/no-extraneous-class": "off"
+      }
+    }
+  ]
+}

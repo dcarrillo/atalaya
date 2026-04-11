@@ -1,0 +1,30 @@
+{
+  "name": "atalaya-prod-status-page",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "echo 'Deploy from root: npm run deploy'",
+    "typecheck": "astro check && tsc --noEmit",
+    "check": "astro check && tsc --noEmit && eslint",
+    "test": "vitest run",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.8",
+    "@astrojs/cloudflare": "^13.1.7",
+    "astro": "^6.1.4",
+    "uplot": "^1.6.31"
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^8.58.1",
+    "astro-eslint-parser": "^1.4.0",
+    "eslint": "^10.2.0",
+    "eslint-plugin-astro": "^1.7.0",
+    "typescript": "^6.0.0"
+  }
+}
