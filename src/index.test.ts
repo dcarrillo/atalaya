@@ -182,20 +182,6 @@ describe('worker fetch handler', () => {
       astroFetchMock.mockResolvedValue(new Response('<html>OK</html>', { status: 200 }));
     });
 
-    it('should not cache API endpoints', async () => {
-      const worker = await getWorker();
-      const request = new Request('https://example.com/api/status');
-      const envWithPublic = { ...mockEnv, STATUS_PUBLIC: 'true' };
-
-      const response = await worker.fetch(request, envWithPublic, mockCtx);
-
-      // API endpoint returns JSON, not HTML
-      expect(response.headers.get('Content-Type')).toBe('application/json');
-      expect(response.headers.get('Cache-Control')).toBeNull();
-      expect(mockCaches.default.match).not.toHaveBeenCalled();
-      expect(mockCaches.default.put).not.toHaveBeenCalled();
-    });
-
     it('should normalize cache key by removing query parameters', async () => {
       const worker = await getWorker();
       const request1 = new Request('https://example.com/?t=1234567890');

@@ -7,7 +7,6 @@ import { parseConfig } from './config/index.js';
 import { prepareChecks } from './checker/index.js';
 import { processResults } from './processor/index.js';
 import { formatWebhookPayload } from './alert/index.js';
-import { getStatusApiData } from './api/status.js';
 import { getMonitorStates, writeCheckResults, updateMonitorStates, recordAlert } from './db.js';
 import { interpolateSecrets } from './utils/interpolate.js';
 import type { Env } from './types.js';
@@ -18,24 +17,7 @@ import type { Config } from './config/types.js';
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
-    if (url.pathname === '/api/status') {
-      try {
-        const configYaml = interpolateSecrets(env.MONITORS_CONFIG, env);
-        const config = parseConfig(configYaml);
-        const data = await getStatusApiData(env.DB, config);
-        return new Response(JSON.stringify(data), {
-          headers: { 'Content-Type': 'application/json' },
-        });
-      } catch (error) {
-        console.error('Status API error:', error);
-        return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-    }
 
-    // Auth check for all non-API routes
     const authResponse = await checkAuth(request, env);
     if (authResponse) {
       return authResponse;
