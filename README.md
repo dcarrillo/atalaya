@@ -364,7 +364,7 @@ npm run check:pages        # pages (astro check + tsc)
 
 ## TODO
 
-- [ ] Add support for TLS checks (certificate validity, expiration).
+- [ ] Add support for TLS checks (certificate validity, expiration). Apparently, the Workers API does not support certificate data  access, even at the socket level. An external service may be required.
 - [ ] Refine the status page to look... well... less IA generated.
 - [ ] Initial support for incident management (manual status overrides, incident timeline).
 - [ ] Branded status page.
