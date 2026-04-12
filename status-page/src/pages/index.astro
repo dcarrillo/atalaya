@@ -10,6 +10,7 @@ import { env } from 'cloudflare:workers';
 
 let data: Awaited<ReturnType<typeof getStatusApiData>> | null = null;
 let error: Error | null = null;
+let banner: { url: string; link?: string } | undefined = undefined;
 
 try {
   // TypeScript doesn't know about MONITORS_CONFIG in cloudflare:workers env
@@ -21,6 +22,10 @@ try {
   const configYaml = interpolateSecrets(monitorsConfig, envAny);
   const config = parseConfig(configYaml);
   data = await getStatusApiData(env.DB, config);
+
+  const bannerUrl = envAny.STATUS_BANNER_URL;
+  const bannerLink = envAny.STATUS_BANNER_LINK;
+  banner = bannerUrl ? { url: bannerUrl, link: bannerLink } : undefined;
 } catch (err) {
   console.error('Failed to fetch status data:', err);
   error = err as Error;
@@ -55,7 +60,7 @@ const sortedMonitors = data ? [...data.monitors].sort(
       </div>
     ) : (
         <>
-        <Header summary={data!.summary} lastUpdated={data!.lastUpdated} title={data!.title} />
+        <Header summary={data!.summary} lastUpdated={data!.lastUpdated} title={data!.title} banner={banner} />
         <div class="monitors">
           {sortedMonitors.map(monitor => <MonitorCard monitor={monitor} />)}
         </div>
@@ -80,7 +85,7 @@ const sortedMonitors = data ? [...data.monitors].sort(
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: 
+    background-image:
       linear-gradient(var(--border-subtle) 1px, transparent 1px),
       linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
     background-size: 40px 40px;
@@ -90,7 +95,7 @@ const sortedMonitors = data ? [...data.monitors].sort(
   }
 
   [data-theme='dark'] .container::before {
-    background-image: 
+    background-image:
       linear-gradient(var(--border) 1px, transparent 1px),
       linear-gradient(90deg, var(--border) 1px, transparent 1px);
     opacity: 0.1;
@@ -106,7 +111,7 @@ const sortedMonitors = data ? [...data.monitors].sort(
     .container {
       padding: var(--space-16) var(--space-12) var(--space-20);
     }
-    
+
     .monitors {
       gap: var(--space-5);
     }
@@ -201,18 +206,18 @@ const sortedMonitors = data ? [...data.monitors].sort(
     .container {
       padding: var(--space-5) var(--space-4);
     }
-    
+
     .error-state,
     .loading-state,
     .empty-state {
       padding: var(--space-12) var(--space-4);
     }
-    
+
     .error-icon,
     .empty-icon {
       font-size: 2.25rem;
     }
-    
+
     .error-state h2,
     .empty-state h2 {
       font-size: var(--text-xl);
