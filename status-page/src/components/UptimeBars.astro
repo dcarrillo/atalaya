@@ -61,6 +61,8 @@ function getBarColor(uptimePercent: number | undefined): string {
     gap: 1px;
     width: 100%;
     height: 14px;
+    position: relative;
+    overflow: visible;
   }
 
   .bar {
@@ -93,13 +95,17 @@ function getBarColor(uptimePercent: number | undefined): string {
     background: var(--no-data);
   }
 
-  /* Tooltip */
+  /* Tooltip - positioned below to avoid conflict with bar labels */
+  .bar {
+    position: relative;
+  }
+  
   .bar::before {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: 100%;
+    top: calc(100% + 8px);
     left: 50%;
-    transform: translateX(-50%) translateY(-8px);
+    transform: translateX(-50%);
     background: var(--text);
     color: var(--bg);
     padding: 4px 8px;
@@ -112,36 +118,83 @@ function getBarColor(uptimePercent: number | undefined): string {
     transition: opacity 0.2s ease;
     pointer-events: none;
     z-index: 1000;
+    /* Prevent tooltip overflow */
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Ensure tooltip stays within screen bounds */
+    left: 50%;
+    transform: translateX(-50%);
+    /* Constrain to viewport */
+    max-width: min(200px, calc(100vw - 32px));
+  }
+
+  /* For left-edge bars, prevent left overflow */
+  .bar:nth-child(1)::before,
+  .bar:nth-child(2)::before,
+  .bar:nth-child(3)::before,
+  .bar:nth-child(4)::before,
+  .bar:nth-child(5)::before,
+  .bar:nth-child(6)::before,
+  .bar:nth-child(7)::before,
+  .bar:nth-child(8)::before,
+  .bar:nth-child(9)::before,
+  .bar:nth-child(10)::before {
+    left: 0;
+    transform: translateX(0);
+  }
+  
+  /* For right-edge bars, prevent right overflow */
+  .bar:nth-last-child(1)::before,
+  .bar:nth-last-child(2)::before,
+  .bar:nth-last-child(3)::before,
+  .bar:nth-last-child(4)::before,
+  .bar:nth-last-child(5)::before,
+  .bar:nth-last-child(6)::before,
+  .bar:nth-last-child(7)::before,
+  .bar:nth-last-child(8)::before,
+  .bar:nth-last-child(9)::before,
+  .bar:nth-last-child(10)::before {
+    left: auto;
+    right: 0;
+    transform: translateX(0);
   }
 
   .bar::after {
     content: '';
     position: absolute;
-    bottom: 100%;
+    top: calc(100% + 2px);
     left: 50%;
-    transform: translateX(-50%) translateY(-2px);
+    transform: translateX(-50%);
     border: 4px solid transparent;
-    border-top-color: var(--text);
+    border-bottom-color: var(--text);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease;
     pointer-events: none;
     z-index: 1000;
   }
-
+  
+  /* Adjust arrow position for edge bars */
+  .bar:nth-child(1)::after,
+  .bar:nth-child(2)::after,
+  .bar:nth-child(3)::after,
+  .bar:nth-child(4)::after,
+  .bar:nth-child(5)::after,
+  .bar:nth-child(6)::after,
+  .bar:nth-child(7)::after,
+  .bar:nth-child(8)::after,
+  .bar:nth-child(9)::after,
+  .bar:nth-child(10)::after {
+    left: 8px;
+    transform: translateX(0);
+  }
+  
   .bar:hover::before,
   .bar:focus::before,
   .bar:hover::after,
   .bar:focus::after {
     opacity: 1;
     visibility: visible;
-  }
-
-  .bar-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 9px;
-    color: var(--text-dim);
-    margin-top: 3px;
   }
 </style>
