@@ -79,18 +79,18 @@ function tooltipPlugin(strokeColor: string): uPlot.Plugin {
           tooltipElement = document.createElement('div');
           tooltipElement.className = 'chart-tooltip';
           tooltipElement.style.cssText = `
-            position: absolute;
-            pointer-events: none;
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid ${strokeColor};
-            color: #e2e8f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font: 500 10px 'Geist Mono', monospace;
-            display: none;
-            white-space: nowrap;
-            z-index: 10;
-          `;
+             position: absolute;
+             pointer-events: none;
+             background: rgba(15, 23, 42, 0.95);
+             border: 1px solid ${strokeColor};
+             color: #e2e8f0;
+             padding: 4px 8px;
+             border-radius: 4px;
+             font: 500 10px 'Geist Mono', monospace;
+             display: none;
+             white-space: nowrap;
+             z-index: 10;
+           `;
           // Cast needed: @cloudflare/workers-types overrides DOM append() signature
           (over as ParentNode).append(tooltipElement);
 
@@ -131,18 +131,54 @@ function tooltipPlugin(strokeColor: string): uPlot.Plugin {
           const msString = Math.round(yValue) + ' ms';
           tooltipElement.textContent = `${timeString}  ${msString}`;
 
-          // Position tooltip, flipping side if near right edge
+          // Position tooltip, ensuring it stays within chart bounds
           const tipWidth = tooltipElement.offsetWidth;
+          const tipHeight = tooltipElement.offsetHeight;
           const plotWidth = over.clientWidth;
+          const plotHeight = over.clientHeight;
           const shiftX = 12;
           const shiftY = -10;
-          let posLeft = left + shiftX;
-          if (posLeft + tipWidth > plotWidth) {
+
+          // Calculate horizontal position - choose side with more space
+          let posLeft: number;
+          const spaceRight = plotWidth - (left + shiftX);
+          const spaceLeft = left - shiftX;
+
+          // Default to right side if there's enough space
+          if (spaceRight >= tipWidth) {
+            posLeft = left + shiftX;
+          }
+          // Try left side if there's more space there
+          else if (spaceLeft >= tipWidth) {
             posLeft = left - tipWidth - shiftX;
+          }
+          // Not enough space on either side, choose the better option
+          else {
+            // If right side has more space than left, use right side clamped
+            if (spaceRight > spaceLeft) {
+              posLeft = plotWidth - tipWidth;
+            } else {
+              // Use left side clamped
+              posLeft = 0;
+            }
+          }
+
+          // Ensure we don't go outside bounds
+          posLeft = Math.max(0, Math.min(posLeft, plotWidth - tipWidth));
+
+          // Calculate vertical position
+          let posTop = (top ?? 0) + shiftY;
+          // Check if tooltip would overflow top edge
+          if (posTop < 0) {
+            posTop = 0;
+          }
+          // Check if tooltip would overflow bottom edge
+          else if (posTop + tipHeight > plotHeight) {
+            posTop = plotHeight - tipHeight;
           }
 
           tooltipElement.style.left = posLeft + 'px';
-          tooltipElement.style.top = (top ?? 0) + shiftY + 'px';
+          tooltipElement.style.top = posTop + 'px';
         },
       ],
     },

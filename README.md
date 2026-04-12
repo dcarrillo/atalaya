@@ -368,4 +368,4 @@ npm run check:pages        # pages (astro check + tsc)
 - [ ] Refine the status page to look... well... less IA generated.
 - [ ] Initial support for incident management (manual status overrides, incident timeline).
 - [x] Branded status page (simple custom banner).
-- [] Add support for notifications other than webhooks.
+- [ ] Add support for notifications other than webhooks.
