@@ -9,6 +9,7 @@ npm workspace: Cloudflare Worker (`src/`) + Astro 6 SSR app (`status-page/`).
 - **Static assets**: `status-page/dist/client/` served via `ASSETS` binding (`run_worker_first = true`)
 - **Shared types**: `src/types.ts` imported via `@worker/types` alias in `status-page/tsconfig.json`
 - **Auth**: `status-page/src/lib/auth.ts`, configured via `STATUS_PUBLIC`, `STATUS_USERNAME`, `STATUS_PASSWORD` env vars
+- **Banner**: Custom banner image via `STATUS_BANNER_URL` and `STATUS_BANNER_LINK` env vars
 
 ## Commands
 
@@ -58,3 +59,18 @@ Before commit: `npm run check && npm run test && npm run build:pages && npm run 
 - **Types**: `type` for aliases, `interface` for object shapes. Explicit return types.
 - **Naming**: files `kebab-case.ts`, types `PascalCase`, variables `camelCase`, DB fields `snake_case`.
 - **Tests**: `*.test.ts` colocated with source. Vitest with `vi` for mocks.
+
+## Banner Configuration
+
+Set environment variables in `wrangler.toml` or Cloudflare dashboard:
+
+```toml
+[vars]
+STATUS_BANNER_URL = "https://example.com/banner.png"
+STATUS_BANNER_LINK = "https://example.com"  # optional
+```
+
+- Banner replaces title text when `STATUS_BANNER_URL` is set
+- Title is used as `alt` text for accessibility
+- Link opens in same tab when `STATUS_BANNER_LINK` is set
+- Empty or unset URL falls back to title display

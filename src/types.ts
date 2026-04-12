@@ -89,6 +89,8 @@ export type Env = {
   STATUS_PUBLIC?: string;
   REGIONAL_CHECKER_DO?: DurableObjectNamespace;
   ASSETS?: Fetcher;
+  STATUS_BANNER_URL?: string;
+  STATUS_BANNER_LINK?: string;
 };
 
 // Status API response types (consumed by Pages project via service binding)

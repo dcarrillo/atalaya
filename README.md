@@ -57,6 +57,7 @@ __ ,--~'                  ~~----____
   - Response time charts (uPlot) with downtime bands.
   - Basic auth or public access modes.
   - Dark/light mode.
+  - Custom banner image support with optional clickable link.
 
 ## Architecture
 
@@ -135,7 +136,7 @@ settings:
 
 ### Per-Monitor Overrides
 
-Each monitor can override the global default_* settings:
+Each monitor can override the global default\_\* settings:
 
 ```yaml
 - name: 'critical-api'
@@ -270,6 +271,17 @@ wrangler secret put STATUS_PUBLIC  # Set value to "true"
 - If `STATUS_PUBLIC` is `"true"`: public access allowed
 - If credentials are set: basic auth required
 - Otherwise: 403 Forbidden
+
+**Custom Banner:**
+
+You can add a custom banner image to replace the title text on the status page:
+
+```toml
+# In wrangler.toml
+[vars]
+STATUS_BANNER_URL = "https://example.com/banner.png"
+STATUS_BANNER_LINK = "https://example.com"  # optional
+```
 
 ## Secret Management
 
