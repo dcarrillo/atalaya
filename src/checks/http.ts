@@ -31,28 +31,52 @@ export async function executeHttpCheck(check: HttpCheckRequest): Promise<CheckRe
       timeout = undefined;
 
       const responseTime = Date.now() - startTime;
+      const bodyText = await response.text();
 
-      if (check.expectedStatus && response.status !== check.expectedStatus) {
-        lastError = `Expected status ${check.expectedStatus}, got ${response.status}`;
-        if (i < check.retries) {
-          await sleep(check.retryDelayMs);
-          continue;
+      let statusOk = true;
+      let bodyOk = true;
+      let errorMessages: string[] = [];
+
+      if (check.expectedStatus && check.expectedStatus > 0) {
+        if (response.status !== check.expectedStatus) {
+          statusOk = false;
+          errorMessages.push(`Expected status ${check.expectedStatus}, got ${response.status}`);
         }
+      } else if (response.status < 200 || response.status >= 400) {
+        statusOk = false;
+        errorMessages.push(`Expected 2xx/3xx status, got ${response.status}`);
+      }
 
+      if (
+        check.expectedBodyContains &&
+        check.expectedBodyContains.trim() &&
+        !bodyText.includes(check.expectedBodyContains)
+      ) {
+        bodyOk = false;
+        errorMessages.push(`Expected body to contain '${check.expectedBodyContains}', not found`);
+      }
+
+      if (statusOk && bodyOk) {
         return {
           name: check.name,
-          status: 'down',
+          status: 'up',
           responseTimeMs: responseTime,
-          error: lastError,
+          error: '',
           attempts,
         };
       }
 
+      lastError = errorMessages.join('; ');
+      if (i < check.retries) {
+        await sleep(check.retryDelayMs);
+        continue;
+      }
+
       return {
         name: check.name,
-        status: 'up',
+        status: 'down',
         responseTimeMs: responseTime,
-        error: '',
+        error: lastError,
         attempts,
       };
     } catch (error) {

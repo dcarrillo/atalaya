@@ -46,7 +46,7 @@ __ ,--~'                  ~~----____
 
 ## Features
 
-- HTTP, TCP, and DNS monitoring.
+- HTTP/HTTPs, TCP, and DNS monitoring.
 - Regional monitoring from specific Cloudflare locations.
 - Configurable retries with immediate retry on failure.
 - Configurable failure thresholds before alerting.
@@ -159,6 +159,7 @@ Each monitor can override the global default\_\* settings:
   target: 'https://api.example.com/health'
   method: GET
   expected_status: 200
+  expected_body_contains: 'OK' # Optional: check if response body contains this text
   headers: # optional, merged with default User-Agent: atalaya-uptime
     Authorization: 'Bearer ${API_TOKEN}'
     Accept: 'application/json'
@@ -364,7 +365,7 @@ npm run check:pages        # pages (astro check + tsc)
 
 ## TODO
 
-- [ ] Add support for TLS checks (certificate validity, expiration). Apparently, the Workers API does not support certificate data  access, even at the socket level. An external service may be required.
+- [ ] Add support for TLS checks (certificate validity, expiration). Apparently, the Workers API does not support certificate data access, even at the socket level. An external service may be required.
 - [ ] Refine the status page to look... well... less IA generated.
 - [ ] Initial support for incident management (manual status overrides, incident timeline).
 - [x] Branded status page (simple custom banner).

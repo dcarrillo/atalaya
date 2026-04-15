@@ -12,6 +12,7 @@ export interface HttpCheckRequest extends CheckRequestBase {
   method?: string;
   expectedStatus?: number;
   headers?: Record<string, string>;
+  expectedBodyContains?: string;
 }
 
 export interface TcpCheckRequest extends CheckRequestBase {

@@ -79,6 +79,7 @@ function applyDefaults(raw: RawYamlConfig): Config {
           type,
           method: m.method ?? '',
           expectedStatus: m.expected_status ?? 0,
+          expectedBodyContains: m.expected_body_contains ?? '',
           headers: m.headers ?? {},
         };
       }

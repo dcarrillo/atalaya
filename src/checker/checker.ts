@@ -19,6 +19,7 @@ export function prepareChecks(config: Config): CheckRequest[] {
           type: m.type,
           method: m.method || undefined,
           expectedStatus: m.expectedStatus || undefined,
+          expectedBodyContains: m.expectedBodyContains || undefined,
           headers: Object.keys(m.headers).length > 0 ? m.headers : undefined,
         };
       }

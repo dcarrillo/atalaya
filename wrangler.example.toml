@@ -111,6 +111,17 @@ monitors:
     expected_status: 200
     timeout_ms: 10000
     alerts: ["default"]
+
+  # Example with expected_body_contains
+  - name: "json-api-health"
+    type: http
+    target: "https://api.example.com/health"
+    method: GET
+    expected_status: 200
+    expected_body_contains: '"status":"healthy"' # Check JSON response contains healthy status
+    headers:
+      Content-Type: "application/json"
+    alerts: ["default"]
 """
 
 # optional
