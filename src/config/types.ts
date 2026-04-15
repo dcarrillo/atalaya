@@ -33,6 +33,7 @@ export interface HttpMonitor extends MonitorBase {
   type: 'http';
   method: string;
   expectedStatus: number;
+  expectedBodyContains: string;
   headers: Record<string, string>;
 }
 
@@ -76,6 +77,7 @@ export type RawYamlConfig = {
     target?: string;
     method?: string;
     expected_status?: number;
+    expected_body_contains?: string;
     headers?: Record<string, string>;
     record_type?: string;
     expected_values?: string[];

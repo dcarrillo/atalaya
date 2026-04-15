@@ -226,4 +226,35 @@ monitors:
     const config = parseConfig(yaml);
     expect(config.settings.title).toBe('Atalaya Uptime Monitor');
   });
+
+  it('parses expected_body_contains field', () => {
+    const yaml = `
+monitors:
+  - name: "api-health"
+    type: http
+    target: "https://api.example.com/health"
+    expected_body_contains: "healthy"
+`;
+    const config = parseConfig(yaml);
+
+    expect(config.monitors).toHaveLength(1);
+    if (config.monitors[0].type === 'http') {
+      expect(config.monitors[0].expectedBodyContains).toBe('healthy');
+    }
+  });
+
+  it('defaults expected_body_contains to empty string', () => {
+    const yaml = `
+monitors:
+  - name: "no-body-check"
+    type: http
+    target: "https://example.com"
+`;
+    const config = parseConfig(yaml);
+
+    expect(config.monitors).toHaveLength(1);
+    if (config.monitors[0].type === 'http') {
+      expect(config.monitors[0].expectedBodyContains).toBe('');
+    }
+  });
 });

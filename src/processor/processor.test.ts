@@ -39,6 +39,7 @@ describe('processResults', () => {
           method: 'GET',
           expectedStatus: 200,
           headers: {},
+          expectedBodyContains: '',
           timeoutMs: 5000,
           retries: 3,
           retryDelayMs: 1000,
@@ -102,6 +103,7 @@ describe('processResults', () => {
           method: 'GET',
           expectedStatus: 200,
           headers: {},
+          expectedBodyContains: '',
           timeoutMs: 5000,
           retries: 3,
           retryDelayMs: 1000,
@@ -125,7 +127,7 @@ describe('processResults', () => {
       {
         monitor_name: 'test',
         current_status: 'down',
-        consecutive_failures: 3,
+        consecutive_failures: 0,
         last_status_change: 0,
         last_checked: 0,
       },
@@ -145,7 +147,16 @@ describe('processResults', () => {
         defaultTimeoutMs: 5000,
         defaultFailureThreshold: 3,
       },
-      alerts: [],
+      alerts: [
+        {
+          type: 'webhook' as const,
+          name: 'alert',
+          url: 'https://example.com',
+          method: 'POST',
+          headers: {},
+          bodyTemplate: '',
+        },
+      ],
       monitors: [
         {
           name: 'test',
@@ -154,10 +165,11 @@ describe('processResults', () => {
           method: 'GET',
           expectedStatus: 200,
           headers: {},
+          expectedBodyContains: '',
           timeoutMs: 5000,
           retries: 3,
           retryDelayMs: 1000,
-          failureThreshold: 3,
+          failureThreshold: 2,
           alerts: ['alert'],
         },
       ],
@@ -177,7 +189,7 @@ describe('processResults', () => {
       {
         monitor_name: 'test',
         current_status: 'up',
-        consecutive_failures: 1,
+        consecutive_failures: 0,
         last_status_change: 0,
         last_checked: 0,
       },
@@ -199,17 +211,18 @@ describe('processResults', () => {
       alerts: [],
       monitors: [
         {
-          name: 'known',
+          name: 'test',
           type: 'http',
           target: 'https://example.com',
           method: 'GET',
           expectedStatus: 200,
           headers: {},
+          expectedBodyContains: '',
           timeoutMs: 5000,
           retries: 3,
           retryDelayMs: 1000,
           failureThreshold: 2,
-          alerts: [],
+          alerts: ['alert'],
         },
       ],
     };
@@ -260,24 +273,25 @@ describe('processResults', () => {
       alerts: [],
       monitors: [
         {
-          name: 'new-monitor',
+          name: 'test',
           type: 'http',
           target: 'https://example.com',
           method: 'GET',
           expectedStatus: 200,
           headers: {},
+          expectedBodyContains: '',
           timeoutMs: 5000,
           retries: 3,
           retryDelayMs: 1000,
-          failureThreshold: 2,
-          alerts: [],
+          failureThreshold: 3,
+          alerts: ['alert'],
         },
       ],
     };
 
     const results: CheckResult[] = [
       {
-        name: 'new-monitor',
+        name: 'test',
         status: 'up',
         responseTimeMs: 100,
         error: '',
