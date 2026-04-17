@@ -19,6 +19,11 @@ export type WebhookAlert = AlertBase & {
 export type Alert = WebhookAlert; // | EmailAlert | ...
 
 interface MonitorBase {
+  /**
+   * List of maintenance windows. If now is >= start and < end,
+   * monitor is treated as "maintenance". Times must be ISO8601 UTC (with 'Z').
+   */
+  maintenance?: { start: string; end: string }[];
   name: string;
   target: string;
   timeoutMs: number;
@@ -87,5 +92,6 @@ export type RawYamlConfig = {
     failure_threshold?: number;
     alerts?: string[];
     region?: string; // Cloudflare region code for regional checks
+    maintenance?: { start: string; end: string }[];
   }>;
 };

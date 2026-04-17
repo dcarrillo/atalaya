@@ -32,7 +32,7 @@ try {
 }
 
 // Sort: down monitors first, then unknown, then up
-const sortOrder = { down: 0, unknown: 1, up: 2 } as const;
+const sortOrder = { down: 0, maintenance: 1, unknown: 2, up: 3 } as const;
 const sortedMonitors = data ? [...data.monitors].sort(
   (a, b) => (sortOrder[a.status] ?? 1) - (sortOrder[b.status] ?? 1)
 ) : [];

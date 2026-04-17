@@ -16,6 +16,7 @@ Live [example](https://uptime.ifconfig.es/).
 - [Configuration](#configuration)
   - [Settings](#settings)
   - [Monitor Types](#monitor-types)
+  - [Maintenance Windows](#maintenance-windows)
   - [Regional Monitoring](#regional-monitoring)
   - [Alerts](#alerts)
   - [Status Page](#status-page)
@@ -150,6 +151,49 @@ Each monitor can override the global default\_\* settings:
 ```
 
 ### Monitor Types
+
+### Maintenance Windows
+
+You can configure scheduled maintenance windows for individual monitors, suspending alerts while downtime is still tracked for metrics.
+
+**Syntax**
+Each monitor supports a `maintenance` array, with one or more objects specifying a `start` and `end` timestamp in UTC ISO8601 format.
+
+```yaml
+- name: 'web-api'
+  type: http
+  target: 'https://example.com/health'
+  maintenance:
+    - start: '2026-05-10T23:00:00Z'
+      end: '2026-05-11T01:00:00Z'
+    - start: '2026-06-01T02:00:00Z'
+      end: '2026-06-01T03:30:00Z'
+  alerts: ['default']
+```
+
+**Behavior**
+
+- At any time when `now` (UTC) is within a window, the monitor is shown as "maintenance":
+  - Status page and API both clearly show "maintenance" (distinct from "up" or "down").
+  - Downtime during maintenance _is still counted_ for metrics and reporting.
+  - All alerts are suppressed—no notifications are sent for failures during maintenance.
+- Malformed/invalid windows are logged with a warning and ignored.
+- Windows are strictly parsed as UTC. Both `start` and `end` must be present and valid.
+- If any part of maintenance is ongoing upon startup, status immediately reflects "maintenance".
+- Overlapping or adjacent windows are treated as separate, but merged for state computation.
+
+**Example Config**
+
+```yaml
+monitors:
+  - name: 'api-maintenance'
+    type: http
+    target: 'https://api.example.com/health'
+    maintenance:
+      - start: '2026-05-10T23:00:00Z'
+        end: '2026-05-11T01:00:00Z'
+    alerts: ['default']
+```
 
 **HTTP**
 
@@ -367,6 +411,7 @@ npm run check:pages        # pages (astro check + tsc)
 
 - [ ] Add support for TLS checks (certificate validity, expiration). Apparently, the Workers API does not support certificate data access, even at the socket level. An external service may be required.
 - [ ] Refine the status page to look... well... less IA generated.
+- [x] Per-monitor maintenance windows (docs and config example added)
 - [ ] Initial support for incident management (manual status overrides, incident timeline).
 - [x] Branded status page (simple custom banner).
 - [ ] Add support for notifications other than webhooks.

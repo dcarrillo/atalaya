@@ -8,7 +8,7 @@ export type CheckResult = {
 
 export type MonitorState = {
   monitor_name: string;
-  current_status: 'up' | 'down';
+  current_status: 'up' | 'down' | 'maintenance';
   consecutive_failures: number;
   last_status_change: number;
   last_checked: number;
@@ -33,7 +33,7 @@ export type AlertCall = {
 
 export type StateUpdate = {
   monitorName: string;
-  currentStatus: string;
+  currentStatus: 'up' | 'down' | 'maintenance';
   consecutiveFailures: number;
   lastStatusChange: number;
   lastChecked: number;

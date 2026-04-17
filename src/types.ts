@@ -108,7 +108,14 @@ export type StatusApiResponse = {
 
 export type ApiMonitorStatus = {
   name: string;
-  status: 'up' | 'down' | 'unknown';
+  /**
+   * Current status of the monitor.
+   * 'up'              - healthy
+   * 'down'            - failing
+   * 'unknown'         - initial/undefined
+   * 'maintenance'     - within a configured maintenance window (alerts suppressed, shown as maintenance in UI)
+   */
+  status: 'up' | 'down' | 'unknown' | 'maintenance';
   lastChecked: number | undefined;
   uptimePercent: number;
   dailyHistory: ApiDayStatus[];
@@ -122,6 +129,11 @@ export type ApiDayStatus = {
 
 export type ApiRecentCheck = {
   timestamp: number;
-  status: 'up' | 'down';
+  /**
+   * Status for a single check event.
+   * Usually 'up' or 'down',
+   * but 'maintenance' if check occurred during a maintenance window.
+   */
+  status: 'up' | 'down' | 'maintenance';
   responseTimeMs: number;
 };

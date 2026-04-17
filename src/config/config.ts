@@ -68,6 +68,37 @@ function applyDefaults(raw: RawYamlConfig): Config {
       failureThreshold: m.failure_threshold ?? settings.defaultFailureThreshold,
       alerts: m.alerts ?? [],
       region: m.region && isValidRegion(m.region) ? m.region : undefined,
+      maintenance: Array.isArray(m.maintenance)
+        ? m.maintenance.filter((w: any) => {
+            if (
+              !w ||
+              typeof w !== 'object' ||
+              typeof w.start !== 'string' ||
+              typeof w.end !== 'string'
+            )
+              return false;
+            const startMs = Date.parse(w.start);
+            const endMs = Date.parse(w.end);
+            if (
+              isNaN(startMs) ||
+              isNaN(endMs) ||
+              !w.start.endsWith('Z') ||
+              !w.end.endsWith('Z') ||
+              endMs <= startMs
+            ) {
+              console.warn(
+                JSON.stringify({
+                  event: 'invalid_maintenance_window',
+                  start: w.start,
+                  end: w.end,
+                  monitor: m.name,
+                })
+              );
+              return false;
+            }
+            return true;
+          })
+        : undefined,
     };
 
     const type = (m.type as 'http' | 'tcp' | 'dns') ?? 'http';
