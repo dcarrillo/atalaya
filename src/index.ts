@@ -131,7 +131,7 @@ const worker = {
         })
       );
 
-      console.warn(
+      console.info(
         JSON.stringify({
           event: 'scheduled_complete',
           checks: checks.length,
@@ -161,7 +161,7 @@ async function executeCheck(check: CheckRequest, env: Env): Promise<CheckResult>
   // If region is specified and we have Durable Object binding, run check from that region
   if (check.region && env.REGIONAL_CHECKER_DO) {
     try {
-      console.warn(
+      console.info(
         JSON.stringify({ event: 'regional_check_start', monitor: check.name, region: check.region })
       );
 
@@ -186,7 +186,7 @@ async function executeCheck(check: CheckRequest, env: Env): Promise<CheckResult>
         // Ignore kill errors - Durable Object will be garbage collected
       }
 
-      console.warn(
+      console.info(
         JSON.stringify({
           event: 'regional_check_complete',
           monitor: check.name,
@@ -216,7 +216,7 @@ async function executeCheck(check: CheckRequest, env: Env): Promise<CheckResult>
 }
 
 async function executeLocalCheck(check: CheckRequest): Promise<CheckResult> {
-  console.warn(JSON.stringify({ event: 'local_check_start', monitor: check.name }));
+  console.info(JSON.stringify({ event: 'local_check_start', monitor: check.name }));
   switch (check.type) {
     case 'http': {
       return executeHttpCheck(check);

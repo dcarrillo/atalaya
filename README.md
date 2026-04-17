@@ -159,18 +159,6 @@ You can configure scheduled maintenance windows for individual monitors, suspend
 **Syntax**
 Each monitor supports a `maintenance` array, with one or more objects specifying a `start` and `end` timestamp in UTC ISO8601 format.
 
-```yaml
-- name: 'web-api'
-  type: http
-  target: 'https://example.com/health'
-  maintenance:
-    - start: '2026-05-10T23:00:00Z'
-      end: '2026-05-11T01:00:00Z'
-    - start: '2026-06-01T02:00:00Z'
-      end: '2026-06-01T03:30:00Z'
-  alerts: ['default']
-```
-
 **Behavior**
 
 - At any time when `now` (UTC) is within a window, the monitor is shown as "maintenance":
@@ -411,7 +399,7 @@ npm run check:pages        # pages (astro check + tsc)
 
 - [ ] Add support for TLS checks (certificate validity, expiration). Apparently, the Workers API does not support certificate data access, even at the socket level. An external service may be required.
 - [ ] Refine the status page to look... well... less IA generated.
-- [x] Per-monitor maintenance windows (docs and config example added)
+- [x] Per-monitor maintenance windows
 - [ ] Initial support for incident management (manual status overrides, incident timeline).
 - [x] Branded status page (simple custom banner).
 - [ ] Add support for notifications other than webhooks.

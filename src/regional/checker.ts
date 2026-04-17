@@ -6,7 +6,7 @@ import type { CheckRequest, CheckResult } from '../types.js';
 
 export class RegionalChecker extends DurableObject {
   async runCheck(check: CheckRequest): Promise<CheckResult> {
-    console.warn(JSON.stringify({ event: 'regional_check_run', monitor: check.name }));
+    console.info(JSON.stringify({ event: 'regional_check_run', monitor: check.name }));
 
     try {
       // Execute the check locally in this Durable Object's region

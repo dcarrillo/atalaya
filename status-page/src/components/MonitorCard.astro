@@ -1,7 +1,5 @@
 ---
 import type { ApiMonitorStatus } from '@worker/types';
-// Allow maintenance as a valid runtime state:
-type MonitorStatus = ApiMonitorStatus['status'] | 'maintenance';
 import UptimeBars from './UptimeBars.astro';
 
 interface Props {

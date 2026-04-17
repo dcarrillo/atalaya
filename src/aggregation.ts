@@ -32,7 +32,7 @@ export async function handleAggregation(env: Env): Promise<void> {
   await deleteOldRawData(env.DB, now);
   await deleteOldHourlyData(env.DB, now);
 
-  console.warn(
+  console.info(
     JSON.stringify({
       event: 'aggregation_complete',
       hour: new Date(hourStart * 1000).toISOString(),
