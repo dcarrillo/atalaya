@@ -7,6 +7,7 @@ import type {
   AlertCall,
   StateUpdate,
 } from './types.js';
+import { isInMaintenance } from '../utils/maintenance.js';
 
 export function processResults(
   results: CheckResult[],
@@ -35,6 +36,8 @@ export function processResults(
     if (!monitor) {
       continue;
     }
+    // Maintenance check
+    const inMaintenance = isInMaintenance(monitor.maintenance, new Date());
 
     const state = stateMap.get(result.name) ?? {
       monitor_name: result.name,
@@ -56,15 +59,23 @@ export function processResults(
 
     const newState: StateUpdate = {
       monitorName: result.name,
-      currentStatus: state.current_status,
+      currentStatus: inMaintenance ? 'maintenance' : state.current_status,
       consecutiveFailures: state.consecutive_failures,
       lastStatusChange: state.last_status_change,
       lastChecked: now,
     };
 
+    // Only update downtime/failure/recovery/alerts logic if not in maintenance
+    if (inMaintenance) {
+      // Alert suppression: no alerts for down or recovery
+      // But downtime is recorded (dbWrite above)
+      // State persists in 'maintenance', reset nothing
+      actions.stateUpdates.push(newState);
+      continue;
+    }
+
     if (result.status === 'down') {
       newState.consecutiveFailures = state.consecutive_failures + 1;
-
       if (
         newState.consecutiveFailures >= monitor.failureThreshold &&
         state.current_status === 'up'
@@ -86,10 +97,8 @@ export function processResults(
     } else {
       newState.consecutiveFailures = 0;
       newState.currentStatus = 'up';
-
       if (state.current_status === 'down') {
         newState.lastStatusChange = now;
-
         for (const alertName of monitor.alerts) {
           const alert: AlertCall = {
             alertName,
@@ -104,7 +113,6 @@ export function processResults(
         newState.lastStatusChange = state.last_status_change;
       }
     }
-
     actions.stateUpdates.push(newState);
   }
 

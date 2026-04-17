@@ -108,6 +108,37 @@ describe('getStatusApiData', () => {
     expect(result.title).toBe('Test Status Page');
   });
 
+  it('surfaces maintenance status and excludes from up/down counts', async () => {
+    const now = Math.floor(Date.now() / 1000);
+    const db = mockD1Database({
+      states: [
+        { monitor_name: 'up-monitor', current_status: 'up', last_checked: now },
+        { monitor_name: 'maint', current_status: 'maintenance', last_checked: now },
+        { monitor_name: 'down-monitor', current_status: 'down', last_checked: now },
+      ],
+      hourly: [],
+      recent: [
+        {
+          monitor_name: 'maint',
+          checked_at: now - 10,
+          status: 'maintenance',
+          response_time_ms: 0,
+        },
+      ],
+    });
+    const result = await getStatusApiData(db, testConfig);
+    const maint = result.monitors.find(m => m.name === 'maint');
+    expect(maint).toBeDefined();
+    expect(maint!.status).toBe('maintenance');
+    expect(maint!.recentChecks[0]).toEqual({
+      timestamp: now - 10,
+      status: 'maintenance',
+      responseTimeMs: 0,
+    });
+    // Only up and down counted in summary
+    expect(result.summary).toEqual({ total: 3, operational: 1, down: 1 });
+  });
+
   it('does not count unknown status monitors as down', async () => {
     const now = Math.floor(Date.now() / 1000);
     const db = mockD1Database({

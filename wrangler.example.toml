@@ -88,6 +88,13 @@ monitors:
     headers:
       Authorization: "Basic ${BASIC_AUTH}"    # BASIC_AUTH must be defined as secret in Cloudflare
     alerts: ["default"]
+    # Optional maintenance windows - ISO 8601 UTC format
+    maintenance:
+      - start: "2026-05-10T23:00:00Z" # Begin maintenance, UTC
+        end:   "2026-05-11T01:00:00Z" # End maintenance (exclusive), UTC
+      - start: "2026-06-01T02:00:00Z"
+        end:   "2026-06-01T03:30:00Z"
+    # Monitors in maintenance do NOT send alerts, but still accumulate downtime for reporting
 
   # Regional monitoring examples
   # Run checks from specific Cloudflare regions

@@ -70,15 +70,17 @@ export async function getStatusApiData(
     const dailyHistory = computeDailyHistory(hourly);
     const uptimePercent = computeOverallUptime(hourly);
 
-    const status: 'up' | 'down' | 'unknown' =
-      state.current_status === 'up' || state.current_status === 'down'
-        ? state.current_status
-        : 'unknown';
+    const status: 'up' | 'down' | 'unknown' | 'maintenance' =
+      state.current_status === 'maintenance'
+        ? 'maintenance'
+        : state.current_status === 'up' || state.current_status === 'down'
+          ? state.current_status
+          : 'unknown';
 
     const rawChecks = checksByMonitor.get(state.monitor_name) ?? [];
     const apiRecentChecks: ApiRecentCheck[] = rawChecks.map(c => ({
       timestamp: c.checked_at,
-      status: c.status === 'up' ? ('up' as const) : ('down' as const),
+      status: c.status === 'maintenance' ? 'maintenance' : c.status === 'up' ? 'up' : 'down',
       responseTimeMs: c.response_time_ms ?? 0,
     }));
 

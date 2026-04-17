@@ -1,5 +1,7 @@
 ---
 import type { ApiMonitorStatus } from '@worker/types';
+// Allow maintenance as a valid runtime state:
+type MonitorStatus = ApiMonitorStatus['status'] | 'maintenance';
 import UptimeBars from './UptimeBars.astro';
 
 interface Props {
@@ -41,13 +43,19 @@ const chartData = JSON.stringify({
   <div class="monitor-head">
     <div
       class:list={['status-dot', `status-dot-${monitor.status}`]}
-      role="status"
-      aria-label={`Status: ${monitor.status === 'up' ? 'Operational' : monitor.status === 'down' ? 'Down' : 'Unknown'}`}
-      title={`${monitor.status === 'up' ? 'Operational' : monitor.status === 'down' ? 'Down' : 'Unknown'}`}
-    ></div>
-    <h3 class="monitor-name" id={`monitor-${monitor.name.replace(/\s+/g, '-').toLowerCase()}-title`} title={monitor.name}>{monitor.name}</h3>
-    <span class:list={['monitor-uptime', `uptime-${monitor.status}`]}>{uptimeFormatted}%</span>
-    <span class="monitor-meta">{lastCheckedText}</span>
+       role="status"
+       aria-label={`Status: ${(monitor.status as any) === 'up' ? 'Operational' : (monitor.status as any) === 'down' ? 'Down' : (monitor.status as any) === 'maintenance' ? 'Maintenance' : 'Unknown'}`}
+       title={`${(monitor.status as any) === 'up' ? 'Operational' : (monitor.status as any) === 'down' ? 'Down' : (monitor.status as any) === 'maintenance' ? 'Maintenance' : 'Unknown'}`}
+
+     ></div>
+     <h3 class="monitor-name" id={`monitor-${monitor.name.replace(/\s+/g, '-').toLowerCase()}-title`} title={monitor.name}>
+       {monitor.name}
+       {(monitor.status as any) === 'maintenance' && (
+         <span class="maintenance-badge" title="Scheduled Maintenance">Maintenance</span>
+       )}
+     </h3>
+     <span class:list={['monitor-uptime', `uptime-${monitor.status}`]} aria-label={(monitor.status as any) === 'maintenance' ? 'Scheduled Maintenance - uptime value reflects unmonitored state' : undefined}>{uptimeFormatted}%</span>
+     <span class="monitor-meta">{lastCheckedText}</span>
   </div>
 
   <UptimeBars dailyHistory={monitor.dailyHistory} />
@@ -164,6 +172,34 @@ const chartData = JSON.stringify({
   .status-dot-unknown::after {
     background: var(--unknown);
     animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  .status-dot-maintenance {
+    background: var(--maintenance, #bfa21a);
+    box-shadow: 0 0 16px #ffe066cc, 0 0 32px #bfa21ab0;
+    border-color: #f8e16c;
+  }
+  .status-dot-maintenance::after {
+    background: var(--maintenance, #f8e16c);
+    animation: pulse-glow 1.5s ease-in-out infinite;
+    opacity: 0.4;
+  }
+
+  .uptime-maintenance {
+    color: var(--maintenance, #bfa21a);
+  }
+
+  .maintenance-badge {
+    display: inline-block;
+    margin-left: 0.5em;
+    padding: 0.1em 0.5em;
+    font-size: var(--text-2xs, 12px);
+    background: var(--maintenance, #fff5bf);
+    color: var(--maintenance, #bfa21a);
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    vertical-align: middle;
   }
 
   @keyframes pulse-glow {
