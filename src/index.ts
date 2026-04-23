@@ -9,6 +9,7 @@ import { processResults } from './processor/index.js';
 import { formatWebhookPayload } from './alert/index.js';
 import { getMonitorStates, writeCheckResults, updateMonitorStates, recordAlert } from './db.js';
 import { interpolateSecrets } from './utils/interpolate.js';
+import { isBlockedURL } from './utils/ssrf.js';
 import type { Env } from './types.js';
 import type { CheckRequest } from './checker/types.js';
 import type { CheckResult } from './processor/types.js';
@@ -254,6 +255,18 @@ async function sendWebhook(
 
     if (!payload.url) {
       console.error(JSON.stringify({ event: 'webhook_not_found', alert: alert.alertName }));
+      return false;
+    }
+
+    const blockedReason = isBlockedURL(payload.url);
+    if (blockedReason) {
+      console.error(
+        JSON.stringify({
+          event: 'webhook_ssrf_blocked',
+          alert: alert.alertName,
+          reason: blockedReason,
+        })
+      );
       return false;
     }
 
