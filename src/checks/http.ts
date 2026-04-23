@@ -1,4 +1,5 @@
 import type { HttpCheckRequest, CheckResult } from '../types.js';
+import { isBlockedURL } from '../utils/ssrf.js';
 import { sleep } from './utils.js';
 
 const DEFAULT_HEADERS: Record<string, string> = {
@@ -10,6 +11,17 @@ export async function executeHttpCheck(check: HttpCheckRequest): Promise<CheckRe
   let attempts = 0;
   let lastError = '';
   const headers = { ...DEFAULT_HEADERS, ...check.headers };
+
+  const blockedReason = isBlockedURL(check.target);
+  if (blockedReason) {
+    return {
+      name: check.name,
+      status: 'down',
+      responseTimeMs: 0,
+      error: blockedReason,
+      attempts: 0,
+    };
+  }
 
   for (let i = 0; i <= check.retries; i++) {
     attempts++;
