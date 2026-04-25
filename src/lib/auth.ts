@@ -10,11 +10,6 @@ const unauthorizedResponse = (): Response =>
     headers: { 'WWW-Authenticate': 'Basic realm="Status Page"' },
   });
 
-/**
- * Timing-safe string comparison using SHA-256 hashing.
- * Hashing both values to a fixed size prevents leaking length information.
- * Uses constant-time byte comparison to prevent timing side-channel attacks.
- */
 async function timingSafeCompare(a: string, b: string): Promise<boolean> {
   const encoder = new TextEncoder();
   const [hashA, hashB] = await Promise.all([
@@ -25,7 +20,6 @@ async function timingSafeCompare(a: string, b: string): Promise<boolean> {
   const viewA = new Uint8Array(hashA);
   const viewB = new Uint8Array(hashB);
 
-  // Constant-time comparison: always check every byte
   let mismatch = 0;
   for (let i = 0; i < viewA.length; i++) {
     mismatch |= viewA[i] ^ viewB[i];

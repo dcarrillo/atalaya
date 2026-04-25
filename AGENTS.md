@@ -30,7 +30,7 @@ vitest run src/path/to.test.ts  # single test (no npx needed)
 ```bash
 npm run dev:pages             # astro dev
 npm run build:pages           # astro build → status-page/dist/
-npm run test:pages            # vitest run (auth tests)
+
 npm run check:pages           # astro check + tsc --noEmit
 npm run lint:pages            # eslint (astro plugin)
 ```
@@ -38,6 +38,8 @@ npm run lint:pages            # eslint (astro plugin)
 ### Verification order
 
 Before commit: `npm run check && npm run test && npm run build:pages && npm run check:pages`
+
+## Verification order
 
 `npm run check` = typecheck + Oxlint (worker) + ESLint (dedup via `eslint-plugin-oxlint`). Pages uses `eslint-plugin-astro`.
 
