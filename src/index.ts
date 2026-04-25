@@ -1,4 +1,4 @@
-import { checkAuth } from '../status-page/src/lib/auth.js';
+import { checkAuth } from './lib/auth.js';
 import { handleAggregation } from './aggregation.js';
 import { executeDnsCheck } from './checks/dns.js';
 import { executeHttpCheck } from './checks/http.js';

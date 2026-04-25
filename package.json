@@ -20,7 +20,6 @@
     "check:fix": "npm run lint:fix && npm run format",
     "dev:pages": "npm run dev --workspace=status-page",
     "build:pages": "npm run build --workspace=status-page",
-    "test:pages": "npm run test --workspace=status-page",
     "check:pages": "npm run typecheck --workspace=status-page && npm run lint:pages && npm run format:pages:check",
     "lint:pages": "npm run lint --workspace=status-page",
     "lint:pages:fix": "npm run lint:fix --workspace=status-page",

@@ -387,9 +387,6 @@ npm run build:pages
 # Worker tests
 npm run test
 
-# Status page tests
-npm run test:pages
-
 # Type checking and linting
 npm run check              # worker
 npm run check:pages        # pages (astro check + tsc)

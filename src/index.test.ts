@@ -11,7 +11,7 @@ vi.mock('cloudflare:workers', () => ({
 }));
 
 // Mock the auth module
-vi.mock('../status-page/src/lib/auth.js', () => ({
+vi.mock('./lib/auth.js', () => ({
   checkAuth: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -62,7 +62,7 @@ describe('worker fetch handler', () => {
   });
 
   it('should return 401 when auth fails', async () => {
-    const { checkAuth } = await import('../status-page/src/lib/auth.js');
+    const { checkAuth } = await import('./lib/auth.js');
     vi.mocked(checkAuth).mockResolvedValueOnce(
       new Response('Unauthorized', {
         status: 401,
