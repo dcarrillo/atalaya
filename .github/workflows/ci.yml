@@ -36,5 +36,8 @@ jobs:
       - name: Build status page
         run: npm run build:pages
 
-      - name: Run tests
+      - name: Run worker tests
         run: npm run test
+
+      - name: Run status-page tests
+        run: npm run test:pages

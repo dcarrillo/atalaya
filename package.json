@@ -23,6 +23,7 @@
     "check:pages": "npm run typecheck --workspace=status-page && npm run lint:pages && npm run format:pages:check",
     "lint:pages": "npm run lint --workspace=status-page",
     "lint:pages:fix": "npm run lint:fix --workspace=status-page",
+    "test:pages": "npm run test --workspace=status-page",
     "format:pages": "prettier --write \"src/**/*.ts\" \"status-page/src/**/*.ts\"",
     "format:pages:check": "prettier --check \"src/**/*.ts\" \"status-page/src/**/*.ts\""
   },

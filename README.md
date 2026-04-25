@@ -381,15 +381,18 @@ curl "http://localhost:8787/__scheduled?cron=*+*+*+*+*"
 ### Testing
 
 ```bash
-# Fist build the status page
+# First build the status page
 npm run build:pages
 
 # Worker tests
 npm run test
 
+# Status page unit tests
+npm run test:pages
+
 # Type checking and linting
-npm run check              # worker
-npm run check:pages        # pages (astro check + tsc)
+npm run check              # worker (typecheck + lint + format)
+npm run check:pages        # pages (astro check + tsc + lint)
 ```
 
 ## TODO
