@@ -28,21 +28,21 @@
     "format:pages:check": "prettier --check \"src/**/*.ts\" \"status-page/src/**/*.ts\""
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260619.1",
+    "@cloudflare/workers-types": "^4.20260702.1",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.9.4",
-    "@typescript-eslint/parser": "^8.61.1",
-    "eslint": "^10.5.0",
-    "eslint-plugin-oxlint": "^1.70.0",
+    "@typescript-eslint/parser": "^8.62.1",
+    "eslint": "^10.6.0",
+    "eslint-plugin-oxlint": "^1.72.0",
     "oxlint": "^1.59.0",
-    "prettier": "^3.8.4",
+    "prettier": "^3.9.4",
     "typescript": "^6.0.0",
     "vitest": "^4.1.9",
-    "wrangler": "^4.103.0"
+    "wrangler": "^4.107.0"
   },
   "dependencies": {
-    "js-yaml": "^4.2.0",
-    "node-addon-api": "^8.8.0",
+    "js-yaml": "^4.3.0",
+    "node-addon-api": "^8.9.0",
     "node-gyp": "^12.4.0"
   }
 }
