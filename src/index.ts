@@ -43,11 +43,7 @@ const worker = {
           ctx
         );
 
-        if (
-          request.method === 'GET' &&
-          env.STATUS_PUBLIC === 'true' &&
-          response.status === 200
-        ) {
+        if (request.method === 'GET' && env.STATUS_PUBLIC === 'true' && response.status === 200) {
           const responseWithCache = new Response(response.body, response);
           responseWithCache.headers.set('Cache-Control', 'public, max-age=60');
           return responseWithCache;
