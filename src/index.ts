@@ -24,36 +24,6 @@ const worker = {
       return authResponse;
     }
 
-    // Only cache GET requests when status page is public
-    let cacheKey: Request | undefined;
-    if (request.method === 'GET' && env.STATUS_PUBLIC === 'true') {
-      // Create normalized cache key to prevent bypass via query params, headers, or cookies
-      const normalizedUrl = new URL(url);
-      normalizedUrl.search = ''; // Remove query parameters
-      normalizedUrl.hash = ''; // Remove hash fragment
-      cacheKey = new Request(normalizedUrl.toString());
-
-      const cachedResponse = await caches.default.match(cacheKey);
-      if (cachedResponse) {
-        console.log(
-          JSON.stringify({
-            event: 'cache_hit',
-            url: url.toString(),
-            normalizedUrl: normalizedUrl.toString(),
-          })
-        );
-        return cachedResponse;
-      }
-
-      console.log(
-        JSON.stringify({
-          event: 'cache_miss',
-          url: url.toString(),
-          normalizedUrl: normalizedUrl.toString(),
-        })
-      );
-    }
-
     // Try static assets first (CSS, JS, favicon, etc.)
     if (env.ASSETS) {
       const assetResponse = await env.ASSETS.fetch(request);
@@ -75,18 +45,13 @@ const worker = {
           ctx
         );
 
-        // Cache successful responses when status page is public
         if (
           request.method === 'GET' &&
           env.STATUS_PUBLIC === 'true' &&
-          response.status === 200 &&
-          cacheKey
+          response.status === 200
         ) {
           const responseWithCache = new Response(response.body, response);
           responseWithCache.headers.set('Cache-Control', 'public, max-age=60');
-
-          ctx.waitUntil(caches.default.put(cacheKey, responseWithCache.clone()));
-
           return responseWithCache;
         }
 
