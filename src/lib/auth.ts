@@ -7,7 +7,10 @@ export type AuthEnv = {
 const unauthorizedResponse = (): Response =>
   new Response('Unauthorized', {
     status: 401,
-    headers: { 'WWW-Authenticate': 'Basic realm="Status Page"' },
+    headers: {
+      'WWW-Authenticate': 'Basic realm="Status Page"',
+      'Cache-Control': 'private',
+    },
   });
 
 async function timingSafeCompare(a: string, b: string): Promise<boolean> {
@@ -33,7 +36,10 @@ export async function checkAuth(request: Request, env: AuthEnv): Promise<Respons
   }
 
   if (!env.STATUS_USERNAME || !env.STATUS_PASSWORD) {
-    return new Response('Forbidden', { status: 403 });
+    return new Response('Forbidden', {
+      status: 403,
+      headers: { 'Cache-Control': 'private' },
+    });
   }
 
   const authHeader = request.headers.get('Authorization');
