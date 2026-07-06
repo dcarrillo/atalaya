@@ -17,8 +17,6 @@ import type { Config } from './config/types.js';
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
-
     const authResponse = await checkAuth(request, env);
     if (authResponse) {
       return authResponse;
