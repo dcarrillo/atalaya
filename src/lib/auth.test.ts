@@ -26,12 +26,14 @@ describe('checkAuth', () => {
     const result = await checkAuth(makeRequest(), env);
     expect(result).toBeInstanceOf(Response);
     expect(result!.status).toBe(403);
+    expect(result!.headers.get('Cache-Control')).toBe('private');
   });
 
   it('returns 403 when only username is configured', async () => {
     const env: AuthEnv = { STATUS_USERNAME: 'admin' };
     const result = await checkAuth(makeRequest(), env);
     expect(result!.status).toBe(403);
+    expect(result!.headers.get('Cache-Control')).toBe('private');
   });
 
   it('returns 401 when no Authorization header is sent', async () => {
@@ -39,6 +41,7 @@ describe('checkAuth', () => {
     const result = await checkAuth(makeRequest(), env);
     expect(result!.status).toBe(401);
     expect(result!.headers.get('WWW-Authenticate')).toBe('Basic realm="Status Page"');
+    expect(result!.headers.get('Cache-Control')).toBe('private');
   });
 
   it('returns 401 for non-Basic auth header', async () => {
