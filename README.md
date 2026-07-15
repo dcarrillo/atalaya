@@ -1,5 +1,12 @@
 # Atalaya Uptime Monitor
 
+[![CI](https://github.com/dcarrillo/atalaya/actions/workflows/ci.yml/badge.svg)](https://github.com/dcarrillo/atalaya/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue.svg)](https://www.typescriptlang.org/)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-orange.svg)](https://workers.cloudflare.com/)
+[![Astro](https://img.shields.io/badge/Astro-6.0-purple.svg)](https://astro.build/)
+
 Atalaya (Spanish for watchtower) is an uptime & status page monitoring service running on Cloudflare Workers and Durable Objects.
 
 Thanks to the generous Cloudflare free tier, Atalaya provides a simple, customizable, self-hosted solution to monitor the status of public network services,
