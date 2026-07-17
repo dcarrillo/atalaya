@@ -2,7 +2,7 @@
 
 ## Architecture
 
-npm workspace: Cloudflare Worker (`src/`) + Astro 6 SSR app (`status-page/`).
+pnpm workspace: Cloudflare Worker (`src/`) + Astro 6 SSR app (`status-page/`).
 
 - **Worker entrypoint**: `src/index.ts` — `fetch` + `scheduled` handlers, `RegionalChecker` Durable Object
 - **Astro entrypoint**: `status-page/src/pages/index.astro` — single-page SSR app
@@ -16,36 +16,36 @@ npm workspace: Cloudflare Worker (`src/`) + Astro 6 SSR app (`status-page/`).
 ### Root (Worker)
 
 ```bash
-npm run dev                   # wrangler dev
-npm run test                  # vitest (20 test files)
-npm run typecheck             # tsc --noEmit
-npm run check                 # typecheck + lint + format:check
-npm run check:fix             # auto-fix lint + format
-npm run deploy                # build:pages + wrangler deploy
-npm run lint:strict           # oxlint --deny warnings + eslint --max-warnings=0
+pnpm dev                   # wrangler dev
+pnpm test                  # vitest (20 test files)
+pnpm typecheck             # tsc --noEmit
+pnpm check                 # typecheck + lint + format:check
+pnpm check:fix             # auto-fix lint + format
+pnpm deploy                # build:pages + wrangler deploy
+pnpm lint:strict           # oxlint --deny warnings + eslint --max-warnings=0
 vitest run src/path/to.test.ts  # single test (no npx needed)
 ```
 
 ### Pages workspace
 
 ```bash
-npm run dev:pages             # astro dev
-npm run build:pages           # astro build → status-page/dist/
-npm run test:pages            # vitest (3 test files)
-npm run check:pages           # astro check + tsc --noEmit + eslint
-npm run lint:pages            # eslint (astro plugin)
+pnpm dev:pages             # astro dev
+pnpm build:pages           # astro build → status-page/dist/
+pnpm test:pages            # vitest (3 test files)
+pnpm check:pages           # astro check + tsc --noEmit + eslint
+pnpm lint:pages            # eslint (astro plugin)
 ```
 
 ### Verification order
 
-Before commit: `npm run check && npm run test && npm run build:pages && npm run check:pages`
+Before commit: `pnpm check && pnpm test && pnpm build:pages && pnpm check:pages`
 
 ## Gotchas
 
 - **`.js` extensions in imports**: All worker imports use `.js` extensions (`import { foo } from './bar.js'`). Required for ESM resolution with `moduleResolution: "bundler"`.
 - **D1 requires bind parameters**: Use `WHERE 1=?` with `.bind(1)` for queries that would otherwise have no parameters.
 - **Database naming**: D1 columns are `snake_case`, TypeScript properties are `camelCase`. Map at query boundary.
-- **`--legacy-peer-deps`**: Needed when installing Pages dependencies (`@astrojs/check` declares `typescript@^5` but project uses TypeScript 6).
+- **`--legacy-peer-deps`**: Not needed with pnpm. If peer issues arise, configure `peerDependencyRules` in `pnpm-workspace.yaml`.
 - **Pages `dist/` and `.astro/`**: Build artifacts, gitignored.
 - **Astro SSR build artifact**: Worker dynamically imports `../status-page/dist/server/index.mjs` at runtime — uses `@ts-expect-error`.
 - **Astro 6 + @astrojs/cloudflare v13 workarounds**: `status-page/astro.config.mjs` includes `fixBuildRollupInput` plugin and `prerenderEnvironment: 'node'`.
