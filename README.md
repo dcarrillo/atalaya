@@ -69,7 +69,7 @@ __ ,--~'                  ~~----____
 
 ## Architecture
 
-The project is an npm workspace with a single Cloudflare Worker that handles everything:
+The project is a pnpm workspace with a single Cloudflare Worker that handles everything:
 
 ```text
 atalaya/
@@ -91,7 +91,7 @@ atalaya/
 1. Install dependencies:
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. Create the configuration file (`wrangler.toml`):
@@ -122,7 +122,7 @@ atalaya/
 6. Deploy:
 
    ```bash
-   npm run deploy
+   pnpm deploy
    ```
 
    This builds the Astro site and deploys the Worker with static assets in a single step.
@@ -379,7 +379,7 @@ An hourly cron job aggregates raw data and cleans up old records automatically.
 wrangler dev --test-scheduled
 
 # Run status page locally
-npm run dev:pages
+pnpm dev:pages
 
 # Trigger cron manually
 curl "http://localhost:8787/__scheduled?cron=*+*+*+*+*"
@@ -389,17 +389,17 @@ curl "http://localhost:8787/__scheduled?cron=*+*+*+*+*"
 
 ```bash
 # First build the status page
-npm run build:pages
+pnpm build:pages
 
 # Worker tests
-npm run test
+pnpm test
 
 # Status page unit tests
-npm run test:pages
+pnpm test:pages
 
 # Type checking and linting
-npm run check              # worker (typecheck + lint + format)
-npm run check:pages        # pages (astro check + tsc + lint)
+pnpm check              # worker (typecheck + lint + format)
+pnpm check:pages        # pages (astro check + tsc + lint)
 ```
 
 ## TODO
