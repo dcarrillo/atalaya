@@ -7,7 +7,7 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-orange.svg)](https://workers.cloudflare.com/)
 [![Astro](https://img.shields.io/badge/Astro-6.0-purple.svg)](https://astro.build/)
 
-Atalaya (Spanish for watchtower) is an uptime & status page monitoring service running on Cloudflare Workers and Durable Objects.
+Atalaya (Spanish for watchtower) is an uptime & status page monitoring service running on Cloudflare Workers and Durable Objects allowing checks from multiple regions.
 
 It runs entirely on Cloudflare's free tier, so you get a self-hosted uptime monitor and status page without paying for servers. It's aimed at hobbyists who want control over their monitoring and don't mind living inside Cloudflare's ecosystem.
 
@@ -85,7 +85,7 @@ pnpm check:pages        # pages (astro check + tsc + lint)
 ## TODO
 
 - [ ] Add support for TLS checks (certificate validity, expiration). Apparently, the Workers API does not support certificate data access, even at the socket level. An external service may be required.
-- [ ] Refine the status page to look... well... less AI-generated.
+- [x] Refine the status page to look... well... less AI-generated.
 - [x] Per-monitor maintenance windows
 - [ ] Initial support for incident management (manual status overrides, incident timeline).
 - [x] Branded status page (simple custom banner).

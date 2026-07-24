@@ -13,7 +13,6 @@ let error: Error | null = null;
 let banner: { url: string; link?: string } | undefined = undefined;
 
 try {
-  // TypeScript doesn't know about MONITORS_CONFIG in cloudflare:workers env
   const envAny = env as any;
   const monitorsConfig = envAny.MONITORS_CONFIG;
   if (typeof monitorsConfig !== 'string' || !monitorsConfig) {
@@ -31,7 +30,6 @@ try {
   error = err as Error;
 }
 
-// Sort: down monitors first, then unknown, then up
 const sortOrder = { down: 0, maintenance: 1, unknown: 2, up: 3 } as const;
 const sortedMonitors = data ? [...data.monitors].sort(
   (a, b) => (sortOrder[a.status] ?? 1) - (sortOrder[b.status] ?? 1)
@@ -42,7 +40,11 @@ const sortedMonitors = data ? [...data.monitors].sort(
   <main id="main-content" class="container">
     {error ? (
       <div class="error-state">
-        <div class="error-icon">⚠️</div>
+        <svg class="state-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
         <h2>Service Temporarily Unavailable</h2>
         <p>We're having trouble loading status data. Please try again in a moment.</p>
         <button class="retry-button" onclick="window.location.reload()" aria-label="Retry loading status data">Retry</button>
@@ -54,12 +56,16 @@ const sortedMonitors = data ? [...data.monitors].sort(
       </div>
     ) : data!.monitors.length === 0 ? (
       <div class="empty-state">
-        <div class="empty-icon">📊</div>
+        <svg class="state-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
         <h2>No Monitors Configured</h2>
         <p>Add monitors to start tracking your services.</p>
       </div>
     ) : (
-        <>
+      <>
         <Header summary={data!.summary} lastUpdated={data!.lastUpdated} title={data!.title} banner={banner} />
         <div class="monitors">
           {sortedMonitors.map(monitor => <MonitorCard monitor={monitor} />)}
@@ -72,48 +78,24 @@ const sortedMonitors = data ? [...data.monitors].sort(
 
 <style>
   .container {
-    max-width: min(1000px, 90vw);
+    max-width: min(960px, 90vw);
     margin: 0 auto;
-    padding: var(--space-8) var(--space-6);
-    position: relative;
-  }
-
-  .container::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image:
-      linear-gradient(var(--border-subtle) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
-    background-size: 40px 40px;
-    opacity: 0.15;
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  [data-theme='dark'] .container::before {
-    background-image:
-      linear-gradient(var(--border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    opacity: 0.1;
+    padding: var(--space-xl) var(--space-lg) var(--space-2xl);
   }
 
   .monitors {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-md);
   }
 
   @media (min-width: 768px) {
     .container {
-      padding: var(--space-16) var(--space-12) var(--space-20);
+      padding: var(--space-2xl) var(--space-xl) var(--space-3xl);
     }
 
     .monitors {
-      gap: var(--space-5);
+      gap: var(--space-lg);
     }
   }
 
@@ -121,75 +103,65 @@ const sortedMonitors = data ? [...data.monitors].sort(
   .loading-state,
   .empty-state {
     text-align: center;
-    padding: var(--space-20) var(--space-5);
-    background: var(--bg-card);
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    margin-bottom: var(--space-8);
+    padding: var(--space-3xl) var(--space-lg);
+    background: var(--color-paper-2);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-rule);
+    margin-bottom: var(--space-xl);
   }
 
-  .error-icon,
-  .empty-icon {
-    font-size: 48px;
-    margin-bottom: 24px;
-    opacity: 0.8;
+  .state-icon {
+    display: block;
+    margin: 0 auto var(--space-lg);
+    color: var(--color-ink-2);
+    opacity: 0.7;
   }
 
   .error-state h2,
   .empty-state h2 {
-    font-size: 24px;
-    margin-bottom: 12px;
-    color: var(--text);
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-sm);
+    color: var(--color-ink);
   }
 
   .error-state p,
   .empty-state p,
   .loading-state p {
-    color: var(--text-muted);
-    margin-bottom: 24px;
-    max-width: min(400px, 90vw);
+    color: var(--color-ink-2);
+    margin-bottom: var(--space-lg);
+    max-width: 32ch;
     margin-left: auto;
     margin-right: auto;
   }
 
   .retry-button {
-    background: var(--accent);
-    color: white;
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
     border: none;
-    padding: var(--space-3) var(--space-6);
+    padding: var(--space-sm) var(--space-lg);
     border-radius: var(--radius-sm);
-    font-family: inherit;
+    font-family: var(--font-display);
     font-weight: var(--font-semibold);
+    font-size: var(--text-sm);
     cursor: pointer;
-    transition: var(--transition);
   }
 
   .retry-button:hover {
-    background: color-mix(in oklch, var(--accent), white 20%);
+    opacity: 0.9;
   }
 
   .retry-button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .retry-button:hover {
-      transform: translateY(-1px);
-    }
-
-    .retry-button:active {
-      transform: translateY(0);
-    }
-  }
-
   .loading-spinner {
-    width: 3rem;
-    height: 3rem;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 2px solid var(--color-rule);
+    border-top-color: var(--color-accent);
     border-radius: 50%;
-    margin: 0 auto var(--space-6);
+    margin: 0 auto var(--space-lg);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -204,23 +176,24 @@ const sortedMonitors = data ? [...data.monitors].sort(
 
   @media (max-width: 640px) {
     .container {
-      padding: var(--space-5) var(--space-4);
+      padding: var(--space-lg) var(--space-md);
     }
 
     .error-state,
     .loading-state,
     .empty-state {
-      padding: var(--space-12) var(--space-4);
+      padding: var(--space-2xl) var(--space-md);
     }
 
-    .error-icon,
-    .empty-icon {
-      font-size: 2.25rem;
+    .state-icon {
+      width: 36px;
+      height: 36px;
+      margin-bottom: var(--space-md);
     }
 
     .error-state h2,
     .empty-state h2 {
-      font-size: var(--text-xl);
+      font-size: var(--text-lg);
     }
   }
 </style>
