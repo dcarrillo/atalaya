@@ -22,7 +22,7 @@ const { title, description = 'Real-time uptime monitoring dashboard' } = Astro.p
     <meta name="twitter:description" content={description} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="mask-icon" href="/favicon.svg" color="#60a5fa" />
     <title>{title}</title>
@@ -30,28 +30,26 @@ const { title, description = 'Real-time uptime monitoring dashboard' } = Astro.p
   <body>
     <slot />
     <script src="../scripts/charts.ts"></script>
-    <script>
-      // Theme detection and persistence
+    <script is:inline>
       (function() {
-        const STORAGE_KEY = 'atalaya-theme';
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+        var STORAGE_KEY = 'atalaya-theme';
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
 
         function getPreferredTheme() {
-          const stored = localStorage.getItem(STORAGE_KEY);
+          var stored = localStorage.getItem(STORAGE_KEY);
           if (stored === 'light' || stored === 'dark') return stored;
           return prefersDark.matches ? 'dark' : 'light';
         }
 
-        function setTheme(theme: 'light' | 'dark') {
+        /** @param {'light'|'dark'} theme */
+        function setTheme(theme) {
           document.documentElement.setAttribute('data-theme', theme);
           localStorage.setItem(STORAGE_KEY, theme);
         }
 
-        // Set initial theme
         setTheme(getPreferredTheme());
 
-        // Watch for system preference changes (only when no explicit choice)
-        prefersDark.addEventListener('change', (e) => {
+        prefersDark.addEventListener('change', function(e) {
           if (!localStorage.getItem(STORAGE_KEY)) {
             setTheme(e.matches ? 'dark' : 'light');
           }
@@ -68,18 +66,18 @@ const { title, description = 'Real-time uptime monitoring dashboard' } = Astro.p
     position: absolute;
     top: -2.5rem;
     left: 0;
-    background: var(--accent);
-    color: white;
-    padding: var(--space-2) var(--space-4);
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+    padding: var(--space-xs) var(--space-md);
     border-radius: var(--radius-sm);
     text-decoration: none;
     font-weight: var(--font-semibold);
-    z-index: 1000;
-    transition: top var(--transition-fast);
+    font-family: var(--font-display);
+    z-index: var(--z-sticky);
   }
 
   .skip-link:focus {
-    top: var(--space-4);
-    left: var(--space-4);
+    top: var(--space-md);
+    left: var(--space-md);
   }
 </style>

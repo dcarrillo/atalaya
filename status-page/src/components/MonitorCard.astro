@@ -12,6 +12,11 @@ const { monitor } = Astro.props;
 const uptimeFormatted = monitor.uptimePercent.toFixed(2);
 const lastCheckedText = formatLastChecked(monitor.lastChecked);
 
+const statusLabel =
+  monitor.status === 'up' ? 'Operational' :
+  monitor.status === 'down' ? 'Down' :
+  monitor.status === 'maintenance' ? 'Maintenance' : 'Unknown';
+
 const chartData = JSON.stringify({
   timestamps: monitor.recentChecks.map(c => c.timestamp),
   responseTimes: monitor.recentChecks.map(c => c.responseTimeMs),
@@ -23,19 +28,18 @@ const chartData = JSON.stringify({
   <div class="monitor-head">
     <div
       class:list={['status-dot', `status-dot-${monitor.status}`]}
-       role="status"
-       aria-label={`Status: ${(monitor.status as any) === 'up' ? 'Operational' : (monitor.status as any) === 'down' ? 'Down' : (monitor.status as any) === 'maintenance' ? 'Maintenance' : 'Unknown'}`}
-       title={`${(monitor.status as any) === 'up' ? 'Operational' : (monitor.status as any) === 'down' ? 'Down' : (monitor.status as any) === 'maintenance' ? 'Maintenance' : 'Unknown'}`}
-
-     ></div>
-     <h3 class="monitor-name" id={`monitor-${monitor.name.replace(/\s+/g, '-').toLowerCase()}-title`} title={monitor.name}>
-       {monitor.name}
-       {(monitor.status as any) === 'maintenance' && (
-         <span class="maintenance-badge" title="Scheduled Maintenance">Maintenance</span>
-       )}
-     </h3>
-     <span class:list={['monitor-uptime', `uptime-${monitor.status}`]} aria-label={(monitor.status as any) === 'maintenance' ? 'Scheduled Maintenance - uptime value reflects unmonitored state' : undefined}>{uptimeFormatted}%</span>
-     <span class="monitor-meta">{lastCheckedText}</span>
+      role="status"
+      aria-label={`Status: ${statusLabel}`}
+      title={statusLabel}
+    ></div>
+    <h3 class="monitor-name" id={`monitor-${monitor.name.replace(/\s+/g, '-').toLowerCase()}-title`} title={monitor.name}>
+      {monitor.name}
+      {monitor.status === 'maintenance' && (
+        <span class="maintenance-badge" title="Scheduled Maintenance">Maintenance</span>
+      )}
+    </h3>
+    <span class:list={['monitor-uptime', `uptime-${monitor.status}`]} aria-label={monitor.status === 'maintenance' ? 'Scheduled Maintenance' : undefined}>{uptimeFormatted}%</span>
+    <span class="monitor-meta">{lastCheckedText}</span>
   </div>
 
   <UptimeBars dailyHistory={monitor.dailyHistory} />
@@ -53,62 +57,33 @@ const chartData = JSON.stringify({
 
 <style>
   .monitor-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
+    background: var(--color-paper-2);
+    border: 1px solid var(--color-rule);
     border-radius: var(--radius-lg);
-    padding: var(--space-6);
-    transition: all var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
+    padding: var(--space-lg);
     position: relative;
     overflow: hidden;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-sm);
   }
 
   .monitor-card:hover {
-    border-color: var(--accent);
-    box-shadow: var(--shadow-xl);
-    transform: translateY(-4px);
-  }
-
-  .monitor-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, var(--accent), transparent);
-    opacity: 0;
-    transition: opacity var(--transition-normal);
-  }
-
-  .monitor-card:hover::before {
-    opacity: 1;
-  }
-
-
-
-  .monitor-card.status-down {
-    /* Status indicated by status dot and uptime color */
-  }
-
-  .monitor-card.status-unknown {
-    /* Status indicated by status dot and uptime color */
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-md);
   }
 
   .monitor-head {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
   }
 
   .status-dot {
-    width: 1rem;
-    height: 1rem;
+    width: 0.75rem;
+    height: 0.75rem;
     border-radius: 50%;
     flex-shrink: 0;
     position: relative;
-    border: 2px solid transparent;
   }
 
   .status-dot::after {
@@ -117,67 +92,63 @@ const chartData = JSON.stringify({
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.25rem;
+    height: 1.25rem;
     border-radius: 50%;
     opacity: 0.3;
     z-index: -1;
   }
 
   .status-dot-up {
-    background: var(--up);
-    box-shadow: 0 0 16px var(--up-glow), 0 0 32px var(--up-glow);
+    background: var(--color-up);
+    box-shadow: 0 0 12px var(--color-up-glow);
   }
-
   .status-dot-up::after {
-    background: var(--up);
+    background: var(--color-up);
     animation: pulse-glow 2s ease-in-out infinite;
   }
 
   .status-dot-down {
-    background: var(--down);
-    box-shadow: 0 0 16px var(--down-glow), 0 0 32px var(--down-glow);
+    background: var(--color-down);
+    box-shadow: 0 0 12px var(--color-down-glow);
   }
-
   .status-dot-down::after {
-    background: var(--down);
+    background: var(--color-down);
     animation: pulse-glow 1.5s ease-in-out infinite;
   }
 
   .status-dot-unknown {
-    background: var(--unknown);
-    box-shadow: 0 0 16px var(--unknown-glow), 0 0 32px var(--unknown-glow);
+    background: var(--color-unknown);
+    box-shadow: 0 0 12px var(--color-unknown-glow);
   }
-
   .status-dot-unknown::after {
-    background: var(--unknown);
+    background: var(--color-unknown);
     animation: pulse-glow 3s ease-in-out infinite;
   }
 
   .status-dot-maintenance {
-    background: var(--maintenance, #bfa21a);
-    box-shadow: 0 0 16px #ffe066cc, 0 0 32px #bfa21ab0;
-    border-color: #f8e16c;
+    background: var(--color-maintenance);
+    box-shadow: 0 0 12px var(--color-maintenance-glow);
   }
   .status-dot-maintenance::after {
-    background: var(--maintenance, #f8e16c);
+    background: var(--color-maintenance);
     animation: pulse-glow 1.5s ease-in-out infinite;
-    opacity: 0.4;
   }
 
   .uptime-maintenance {
-    color: var(--maintenance, #bfa21a);
+    color: var(--color-maintenance);
   }
 
   .maintenance-badge {
     display: inline-block;
     margin-left: 0.5em;
     padding: 0.1em 0.5em;
-    font-size: var(--text-2xs, 12px);
-    background: var(--maintenance, #fff5bf);
-    color: var(--maintenance, #bfa21a);
-    border-radius: 4px;
-    font-weight: 600;
+    font-size: var(--text-xs);
+    background: var(--color-maintenance-bg);
+    color: var(--color-maintenance);
+    border-radius: var(--radius-xs);
+    font-weight: var(--font-semibold);
+    font-family: var(--font-mono);
     letter-spacing: 0.03em;
     vertical-align: middle;
   }
@@ -188,15 +159,15 @@ const chartData = JSON.stringify({
       transform: translate(-50%, -50%) scale(1);
     }
     50% {
-      opacity: 0.6;
-      transform: translate(-50%, -50%) scale(1.2);
+      opacity: 0.55;
+      transform: translate(-50%, -50%) scale(1.15);
     }
   }
 
   .monitor-name {
-    font-size: var(--text-lg);
+    font-size: var(--text-base);
     font-weight: var(--font-semibold);
-    color: var(--text);
+    color: var(--color-ink);
     word-break: break-word;
     letter-spacing: -0.01em;
     line-height: var(--leading-tight);
@@ -204,92 +175,68 @@ const chartData = JSON.stringify({
 
   .monitor-uptime {
     margin-left: auto;
-    font-size: var(--text-2xl);
+    font-size: var(--text-xl);
     font-weight: var(--font-bold);
     letter-spacing: -0.03em;
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-family: var(--font-family-mono);
     line-height: var(--leading-tight);
   }
 
-  .uptime-up {
-    color: var(--up);
-  }
-
-  .uptime-down {
-    color: var(--down);
-  }
-
-  .uptime-unknown {
-    color: var(--unknown);
-  }
+  .uptime-up { color: var(--color-up); }
+  .uptime-down { color: var(--color-down); }
+  .uptime-unknown { color: var(--color-ink-2); }
 
   .monitor-meta {
     font-size: var(--text-xs);
-    color: var(--text-dim);
-    margin-left: var(--space-md);
+    color: var(--color-ink-3);
+    margin-left: var(--space-xs);
     flex-shrink: 0;
-    font-family: var(--font-family-mono);
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.02em;
-  }
-
-  .chart-section {
-    /* last element, no bottom margin */
   }
 
   .chart-labels {
     display: flex;
     justify-content: space-between;
-    margin-bottom: var(--space-xs);
+    margin-bottom: var(--space-2xs);
   }
 
   .section-label {
     font-size: var(--text-xs);
-    color: var(--text-dim);
+    color: var(--color-ink-3);
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    font-family: var(--font-family-mono);
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-weight: var(--font-medium);
   }
 
-    .chart-container {
-      width: 100%;
-      height: 7.5rem;
-      background: var(--bg-inset);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      touch-action: pan-y; /* Allow vertical scrolling only */
-      position: relative; /* For loading overlay positioning */
-    }
+  .chart-container {
+    width: 100%;
+    height: 7.5rem;
+    background: var(--color-paper-3);
+    border: 1px solid var(--color-rule-subtle);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    touch-action: pan-y;
+    position: relative;
+  }
 
   @media (max-width: 640px) {
     .monitor-card {
-      padding: var(--space-4);
+      padding: var(--space-md);
     }
 
     .monitor-head {
       flex-wrap: wrap;
-      gap: var(--space-2);
-    }
-
-    .status-dot {
-      width: 1.25rem;
-      height: 1.25rem;
-      order: -1; /* Move status dot to beginning */
-    }
-
-    .status-dot::after {
-      width: 1.875rem;
-      height: 1.875rem;
+      gap: var(--space-xs);
     }
 
     .monitor-name {
       font-size: var(--text-sm);
       flex: 1;
-      min-width: 0; /* Allow text truncation */
+      min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -299,43 +246,29 @@ const chartData = JSON.stringify({
       font-size: var(--text-lg);
       margin-left: 0;
       width: 100%;
-      order: 1; /* Move uptime to after name */
       text-align: right;
-      margin-top: var(--space-1);
+      margin-top: var(--space-2xs);
     }
 
-    .monitor-meta {
-      display: none;
-    }
+    .monitor-meta { display: none; }
 
     .chart-container {
       height: 5rem;
-      margin-top: var(--space-3);
-      position: relative; /* For loading overlay positioning */
-    }
-
-    .chart-labels {
-      font-size: var(--text-xs);
+      margin-top: var(--space-sm);
     }
   }
 
-  /* Extra small screens (320px - 375px) */
   @media (max-width: 375px) {
     .monitor-card {
-      padding: var(--space-3);
-    }
-
-    .monitor-name {
-      font-size: var(--text-sm);
+      padding: var(--space-sm);
     }
 
     .monitor-uptime {
-      font-size: var(--text-base);
+      font-size: var(--text-md);
     }
 
     .chart-container {
       height: 4rem;
-      position: relative; /* For loading overlay positioning */
     }
   }
 </style>

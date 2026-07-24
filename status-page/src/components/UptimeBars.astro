@@ -38,18 +38,15 @@ const { dailyHistory } = Astro.props;
 </div>
 
 <style>
-  .uptime-section {
-    margin-bottom: 12px;
-  }
-
+  .uptime-section { margin-bottom: var(--space-sm); }
   .section-label {
     font-size: 10px;
-    color: var(--text-dim);
+    color: var(--color-ink-3);
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    margin-bottom: 6px;
+    font-family: var(--font-mono);
+    margin-bottom: var(--space-2xs);
   }
-
   .uptime-bars {
     display: flex;
     gap: 1px;
@@ -58,96 +55,56 @@ const { dailyHistory } = Astro.props;
     position: relative;
     overflow: visible;
   }
-
   .bar {
     flex: 1;
     border-radius: 2px;
     opacity: 0.65;
-    transition: opacity 0.15s ease, transform 0.15s ease;
+    transition: opacity var(--dur-fast) var(--ease-out),
+                transform var(--dur-fast) var(--ease-out);
     cursor: help;
     position: relative;
   }
+  .bar:hover { opacity: 1; transform: scaleY(1.3); }
+  .bar-up { background: var(--color-up); }
+  .bar-degraded { background: var(--color-degraded); }
+  .bar-down { background: var(--color-down); }
+  .bar-no-data { background: var(--color-no-data); }
 
-  .bar:hover {
-    opacity: 1;
-    transform: scaleY(1.3);
-  }
-
-  .bar-up {
-    background: var(--up);
-  }
-
-  .bar-degraded {
-    background: var(--degraded);
-  }
-
-  .bar-down {
-    background: var(--down);
-  }
-
-  .bar-no-data {
-    background: var(--no-data);
-  }
-
-  /* Tooltip - positioned below to avoid conflict with bar labels */
-  .bar {
-    position: relative;
-  }
-  
   .bar::before {
     content: attr(data-tooltip);
     position: absolute;
     top: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
-    background: var(--text);
-    color: var(--bg);
+    background: var(--color-ink);
+    color: var(--color-paper);
     padding: 4px 8px;
-    border-radius: var(--radius-inner);
+    border-radius: var(--radius-xs);
     font-size: 11px;
-    font-weight: 500;
+    font-weight: var(--font-medium);
+    font-family: var(--font-mono);
     white-space: nowrap;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--dur-fast) var(--ease-out);
     pointer-events: none;
-    z-index: 1000;
-    /* Prevent tooltip overflow */
-    max-width: 200px;
+    z-index: var(--z-tooltip);
+    max-width: min(200px, calc(100vw - 32px));
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Ensure tooltip stays within screen bounds */
-    left: 50%;
-    transform: translateX(-50%);
-    /* Constrain to viewport */
-    max-width: min(200px, calc(100vw - 32px));
   }
 
-  /* For left-edge bars, prevent left overflow */
-  .bar:nth-child(1)::before,
-  .bar:nth-child(2)::before,
-  .bar:nth-child(3)::before,
-  .bar:nth-child(4)::before,
-  .bar:nth-child(5)::before,
-  .bar:nth-child(6)::before,
-  .bar:nth-child(7)::before,
-  .bar:nth-child(8)::before,
-  .bar:nth-child(9)::before,
+  .bar:nth-child(1)::before,  .bar:nth-child(2)::before,  .bar:nth-child(3)::before,
+  .bar:nth-child(4)::before,  .bar:nth-child(5)::before,  .bar:nth-child(6)::before,
+  .bar:nth-child(7)::before,  .bar:nth-child(8)::before,  .bar:nth-child(9)::before,
   .bar:nth-child(10)::before {
     left: 0;
     transform: translateX(0);
   }
-  
-  /* For right-edge bars, prevent right overflow */
-  .bar:nth-last-child(1)::before,
-  .bar:nth-last-child(2)::before,
-  .bar:nth-last-child(3)::before,
-  .bar:nth-last-child(4)::before,
-  .bar:nth-last-child(5)::before,
-  .bar:nth-last-child(6)::before,
-  .bar:nth-last-child(7)::before,
-  .bar:nth-last-child(8)::before,
-  .bar:nth-last-child(9)::before,
+
+  .bar:nth-last-child(1)::before,  .bar:nth-last-child(2)::before,  .bar:nth-last-child(3)::before,
+  .bar:nth-last-child(4)::before,  .bar:nth-last-child(5)::before,  .bar:nth-last-child(6)::before,
+  .bar:nth-last-child(7)::before,  .bar:nth-last-child(8)::before,  .bar:nth-last-child(9)::before,
   .bar:nth-last-child(10)::before {
     left: auto;
     right: 0;
@@ -161,34 +118,34 @@ const { dailyHistory } = Astro.props;
     left: 50%;
     transform: translateX(-50%);
     border: 4px solid transparent;
-    border-bottom-color: var(--text);
+    border-bottom-color: var(--color-ink);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--dur-fast) var(--ease-out);
     pointer-events: none;
-    z-index: 1000;
+    z-index: var(--z-tooltip);
   }
-  
-  /* Adjust arrow position for edge bars */
-  .bar:nth-child(1)::after,
-  .bar:nth-child(2)::after,
-  .bar:nth-child(3)::after,
-  .bar:nth-child(4)::after,
-  .bar:nth-child(5)::after,
-  .bar:nth-child(6)::after,
-  .bar:nth-child(7)::after,
-  .bar:nth-child(8)::after,
-  .bar:nth-child(9)::after,
+
+  .bar:nth-child(1)::after, .bar:nth-child(2)::after, .bar:nth-child(3)::after,
+  .bar:nth-child(4)::after, .bar:nth-child(5)::after, .bar:nth-child(6)::after,
+  .bar:nth-child(7)::after, .bar:nth-child(8)::after, .bar:nth-child(9)::after,
   .bar:nth-child(10)::after {
     left: 8px;
     transform: translateX(0);
   }
-  
-  .bar:hover::before,
-  .bar:focus::before,
-  .bar:hover::after,
-  .bar:focus::after {
+
+  .bar:hover::before, .bar:focus::before,
+  .bar:hover::after, .bar:focus::after {
     opacity: 1;
     visibility: visible;
+  }
+
+  .bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    margin-top: var(--space-2xs);
   }
 </style>

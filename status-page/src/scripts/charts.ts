@@ -7,27 +7,20 @@ type ChartData = {
   statuses: string[];
 };
 
-// Cache for computed CSS variables to avoid layout thrashing
 const cssVarCache = new Map<string, string>();
 
-function getComputedCssVar(name: string): string {
-  if (cssVarCache.has(name)) {
-    return cssVarCache.get(name)!;
-  }
-
+function getCssVar(name: string): string {
+  if (cssVarCache.has(name)) return cssVarCache.get(name)!;
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   cssVarCache.set(name, value);
   return value;
 }
 
-// Clear cache on theme change to get updated values
 function clearCssVarCache(): void {
   cssVarCache.clear();
 }
 
-// Listen for theme changes to clear cache
 if (typeof window !== 'undefined') {
-  // Check if theme attribute changes
   const observer = new MutationObserver(mutations => {
     for (const mutation of mutations) {
       if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
@@ -35,65 +28,53 @@ if (typeof window !== 'undefined') {
       }
     }
   });
-
   observer.observe(document.documentElement, { attributes: true });
 }
 
 const fmtTime = uPlot.fmtDate('{HH}:{mm}:{ss}');
-
-// 24h time formatters for X-axis at different granularities
 const formatAxisHourMinute = uPlot.fmtDate('{HH}:{mm}');
 const fmtAxisDate = uPlot.fmtDate('{M}/{D}');
 
 function fmtAxisValues(_u: uPlot, splits: number[], _ax: number, _space: number, incr: number) {
   const oneHour = 3600;
   const oneDay = 86_400;
-
   return splits.map(v => {
-    if (v === undefined || v === null) {
-      return '';
-    }
-
+    if (v === undefined || v === null) return '';
     const d = new Date(v * 1000);
-    if (incr >= oneDay) {
-      return fmtAxisDate(d);
-    }
-
-    if (incr >= oneHour) {
-      return formatAxisHourMinute(d);
-    }
-
+    if (incr >= oneDay) return fmtAxisDate(d);
+    if (incr >= oneHour) return formatAxisHourMinute(d);
     return formatAxisHourMinute(d);
   });
 }
 
-function tooltipPlugin(strokeColor: string): uPlot.Plugin {
+function tooltipPlugin(_strokeColor: string): uPlot.Plugin {
   let tooltipElement: HTMLDivElement;
   let over: HTMLElement;
-
   return {
     hooks: {
       init: [
         (u: uPlot) => {
           over = u.over;
+          const textColor = getCssVar('--color-ink') || '#e2e8f0';
+          const surface = getCssVar('--color-paper') || '#0f172a';
+
           tooltipElement = document.createElement('div');
           tooltipElement.className = 'chart-tooltip';
-          tooltipElement.style.cssText = `
-             position: absolute;
-             pointer-events: none;
-             background: rgba(15, 23, 42, 0.95);
-             border: 1px solid ${strokeColor};
-             color: #e2e8f0;
-             padding: 4px 8px;
-             border-radius: 4px;
-             font: 500 10px 'Geist Mono', monospace;
-             display: none;
-             white-space: nowrap;
-             z-index: 10;
-           `;
-          // Cast needed: @cloudflare/workers-types overrides DOM append() signature
-          (over as ParentNode).append(tooltipElement);
+          tooltipElement.style.cssText = [
+            'position: absolute',
+            'pointer-events: none',
+            `background: ${surface}`,
+            `color: ${textColor}`,
+            `border: 1px solid ${getCssVar('--color-rule') || 'rgb(51 65 85 / 0.6)'}`,
+            'padding: 4px 8px',
+            'border-radius: 4px',
+            'font: 500 10px var(--font-mono, monospace)',
+            'display: none',
+            'white-space: nowrap',
+            'z-index: 10',
+          ].join(';');
 
+          (over as ParentNode).append(tooltipElement);
           over.addEventListener('mouseenter', () => {
             tooltipElement.style.display = 'block';
           });
@@ -105,7 +86,6 @@ function tooltipPlugin(strokeColor: string): uPlot.Plugin {
       setCursor: [
         (u: uPlot) => {
           const { left, top, idx } = u.cursor;
-
           if (
             idx === null ||
             idx === undefined ||
@@ -116,22 +96,17 @@ function tooltipPlugin(strokeColor: string): uPlot.Plugin {
             tooltipElement.style.display = 'none';
             return;
           }
-
           const xValue = u.data[0][idx];
           const yValue = u.data[1][idx];
-
           if (yValue === null || yValue === undefined) {
             tooltipElement.style.display = 'none';
             return;
           }
-
           tooltipElement.style.display = 'block';
-
           const timeString = fmtTime(new Date(xValue * 1000));
           const msString = Math.round(yValue) + ' ms';
           tooltipElement.textContent = `${timeString}  ${msString}`;
 
-          // Position tooltip, ensuring it stays within chart bounds
           const tipWidth = tooltipElement.offsetWidth;
           const tipHeight = tooltipElement.offsetHeight;
           const plotWidth = over.clientWidth;
@@ -139,43 +114,23 @@ function tooltipPlugin(strokeColor: string): uPlot.Plugin {
           const shiftX = 12;
           const shiftY = -10;
 
-          // Calculate horizontal position - choose side with more space
           let posLeft: number;
           const spaceRight = plotWidth - (left + shiftX);
           const spaceLeft = left - shiftX;
-
-          // Default to right side if there's enough space
           if (spaceRight >= tipWidth) {
             posLeft = left + shiftX;
-          }
-          // Try left side if there's more space there
-          else if (spaceLeft >= tipWidth) {
+          } else if (spaceLeft >= tipWidth) {
             posLeft = left - tipWidth - shiftX;
+          } else if (spaceRight > spaceLeft) {
+            posLeft = plotWidth - tipWidth;
+          } else {
+            posLeft = 0;
           }
-          // Not enough space on either side, choose the better option
-          else {
-            // If right side has more space than left, use right side clamped
-            if (spaceRight > spaceLeft) {
-              posLeft = plotWidth - tipWidth;
-            } else {
-              // Use left side clamped
-              posLeft = 0;
-            }
-          }
-
-          // Ensure we don't go outside bounds
           posLeft = Math.max(0, Math.min(posLeft, plotWidth - tipWidth));
 
-          // Calculate vertical position
           let posTop = (top ?? 0) + shiftY;
-          // Check if tooltip would overflow top edge
-          if (posTop < 0) {
-            posTop = 0;
-          }
-          // Check if tooltip would overflow bottom edge
-          else if (posTop + tipHeight > plotHeight) {
-            posTop = plotHeight - tipHeight;
-          }
+          if (posTop < 0) posTop = 0;
+          else if (posTop + tipHeight > plotHeight) posTop = plotHeight - tipHeight;
 
           tooltipElement.style.left = posLeft + 'px';
           tooltipElement.style.top = posTop + 'px';
@@ -186,16 +141,11 @@ function tooltipPlugin(strokeColor: string): uPlot.Plugin {
 }
 
 function createChart(container: HTMLElement): void {
-  // Remove loading state if present
   const loadingEl = container.querySelector('.chart-loading');
-  if (loadingEl) {
-    loadingEl.remove();
-  }
+  if (loadingEl) loadingEl.remove();
 
   const scriptTag = container.querySelector('script[type="application/json"]');
-  if (!scriptTag?.textContent) {
-    return;
-  }
+  if (!scriptTag?.textContent) return;
 
   let data: ChartData;
   try {
@@ -205,23 +155,25 @@ function createChart(container: HTMLElement): void {
   }
 
   if (data.timestamps.length === 0) {
-    container.innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:11px;">No data available</div>';
+    container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--color-ink-2);font-size:11px;">No data available</div>`;
     return;
   }
 
-  const upColor = getComputedCssVar('--up') || '#10b981';
-  const downColor = getComputedCssVar('--down') || '#ef4444';
-  const textDim = getComputedCssVar('--text-dim') || '#475569';
+  const upColor = getCssVar('--color-up') || '#10b981';
+  const downColor = getCssVar('--color-down') || '#ef4444';
+  const textDim = getCssVar('--color-ink-3') || '#475569';
+  const chartBgInset = getCssVar('--color-paper-3') || 'rgba(30, 41, 59, 0.3)';
 
-  // Determine line color based on current monitor status
   const monitorCard = container.closest('.monitor-card');
   const isDown = monitorCard?.classList.contains('status-down');
   const strokeColor = isDown ? downColor : upColor;
-  const fillColorRgba = isDown ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)';
-  const downtimeBandColor = 'rgba(239, 68, 68, 0.08)';
 
-  // Build downtime bands for the draw hook
+  // Derive fill and band colors from the stroke color via CSS — fall back to rgba from the OKLCH token name
+  const fillColor = isDown
+    ? getCssVar('--color-down-bg') || 'rgba(239, 68, 68, 0.1)'
+    : getCssVar('--color-up-bg') || 'rgba(16, 185, 129, 0.1)';
+  const downtimeBandColor = getCssVar('--color-down-bg') || 'rgba(239, 68, 68, 0.06)';
+
   const downtimeBands: Array<[number, number]> = [];
   let bandStart: number | undefined;
   for (let i = 0; i < data.statuses.length; i++) {
@@ -232,7 +184,6 @@ function createChart(container: HTMLElement): void {
       bandStart = undefined;
     }
   }
-
   if (bandStart !== undefined) {
     downtimeBands.push([bandStart, data.timestamps.at(-1)!]);
   }
@@ -269,7 +220,7 @@ function createChart(container: HTMLElement): void {
         size: 42,
         gap: 4,
         ticks: { show: false },
-        grid: { show: true, stroke: 'rgba(255, 255, 255, 0.04)', width: 1 },
+        grid: { show: true, stroke: chartBgInset, width: 1 },
         values: (_u: uPlot, splits: number[]) =>
           splits.map(v => (v === undefined || v === null ? '' : Math.round(v) + ' ms')),
       },
@@ -280,7 +231,7 @@ function createChart(container: HTMLElement): void {
         label: 'Response Time',
         stroke: strokeColor,
         width: 1.5,
-        fill: fillColorRgba,
+        fill: fillColor,
         spanGaps: false,
       },
     ],
@@ -295,27 +246,19 @@ function createChart(container: HTMLElement): void {
             const x1 = u.valToPos(end, 'x', true);
             ctx.fillRect(x0, u.bbox.top, x1 - x0, u.bbox.height);
           }
-
           ctx.restore();
         },
       ],
     },
   };
 
-  // Build uPlot data format: [timestamps, values]
-  // Replace response times for down status with undefined (gaps)
   const values: Array<number | undefined> = data.responseTimes.map((rt, i) =>
     data.statuses[i] === 'up' ? rt : undefined
   );
-
   const plotData: uPlot.AlignedData = [data.timestamps, values];
-
-  // Clear container and create chart
   container.textContent = '';
-
   const plot = new uPlot(options, plotData, container);
 
-  // Double-click to reset zoom
   plot.over.addEventListener('dblclick', () => {
     plot.setScale('x', {
       min: data.timestamps[0],
@@ -323,8 +266,7 @@ function createChart(container: HTMLElement): void {
     });
   });
 
-  // Resize observer
-  const observer = new ResizeObserver(entries => {
+  const resizeObserver = new ResizeObserver(entries => {
     for (const entry of entries) {
       const { width } = entry.contentRect;
       if (width > 0) {
@@ -332,29 +274,21 @@ function createChart(container: HTMLElement): void {
       }
     }
   });
-
-  observer.observe(container);
+  resizeObserver.observe(container);
 }
 
-// Initialize charts lazily when they enter viewport
 function initCharts(): void {
   const containers = document.querySelectorAll<HTMLElement>('.chart-container');
-
-  // Add loading state to all chart containers
   containers.forEach(container => {
     if (!container.querySelector('.chart-loading')) {
       const loadingEl = document.createElement('div');
       loadingEl.className = 'chart-loading';
-      loadingEl.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:center;height:100%;">
-          <div class="chart-loading-spinner"></div>
-        </div>
-      `;
+      loadingEl.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:center;height:100%;"><div class="chart-loading-spinner"></div></div>';
       container.appendChild(loadingEl);
     }
   });
 
-  // Use IntersectionObserver to lazy load charts
   const observer = new IntersectionObserver(
     entries => {
       entries.forEach(entry => {
@@ -365,16 +299,10 @@ function initCharts(): void {
         }
       });
     },
-    {
-      rootMargin: '100px', // Start loading 100px before entering viewport
-      threshold: 0.1, // Trigger when at least 10% visible
-    }
+    { rootMargin: '100px', threshold: 0.1 }
   );
 
-  // Observe all chart containers
-  containers.forEach(container => {
-    observer.observe(container);
-  });
+  containers.forEach(container => observer.observe(container));
 }
 
 if (document.readyState === 'loading') {
