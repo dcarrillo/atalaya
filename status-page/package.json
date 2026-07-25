@@ -22,9 +22,9 @@
     "uplot": "^1.6.31"
   },
   "devDependencies": {
-    "@typescript-eslint/parser": "^8.62.1",
+    "@typescript-eslint/parser": "^8.65.0",
     "astro-eslint-parser": "^1.4.0",
-    "eslint": "^10.6.0",
+    "eslint": "^10.8.0",
     "eslint-plugin-astro": "^1.7.0",
     "typescript": "^6.0.0"
   }
