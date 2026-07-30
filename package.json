@@ -25,17 +25,17 @@
     "format:pages:check": "prettier --check \"src/**/*.ts\" \"status-page/src/**/*.ts\""
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260717.1",
+    "@cloudflare/workers-types": "^5.20260724.1",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.9.4",
-    "@typescript-eslint/parser": "^8.62.1",
-    "eslint": "^10.6.0",
-    "eslint-plugin-oxlint": "^1.72.0",
-    "oxlint": "^1.74.0",
-    "prettier": "^3.9.4",
+    "@typescript-eslint/parser": "^8.65.0",
+    "eslint": "^10.8.0",
+    "eslint-plugin-oxlint": "^1.75.0",
+    "oxlint": "^1.75.0",
+    "prettier": "^3.9.6",
     "typescript": "^6.0.0",
     "vitest": "^4.1.9",
-    "wrangler": "^4.112.0"
+    "wrangler": "^4.114.0"
   },
   "dependencies": {
     "js-yaml": "^4.3.0",
