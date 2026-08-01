@@ -15,7 +15,7 @@
     "lint:fix": "eslint --fix"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.9",
+    "@astrojs/check": "^0.9.10",
     "@astrojs/cloudflare": "^13.7.0",
     "astro": "^6.4.8",
     "cookie": "^1.0.0",
