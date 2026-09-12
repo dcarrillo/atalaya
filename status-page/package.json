@@ -18,14 +18,14 @@
     "@astrojs/check": "^0.9.10",
     "@astrojs/cloudflare": "^13.7.0",
     "astro": "^6.4.8",
-    "cookie": "^1.0.0",
-    "uplot": "^1.6.31"
+    "cookie": "^1.1.1",
+    "uplot": "^1.6.32"
   },
   "devDependencies": {
-    "@typescript-eslint/parser": "^8.69.0",
+    "@typescript-eslint/parser": "^8.70.0",
     "astro-eslint-parser": "^1.4.0",
-    "eslint": "^10.9.1",
+    "eslint": "^10.10.0",
     "eslint-plugin-astro": "^1.7.0",
-    "typescript": "^6.0.0"
+    "typescript": "^6.0.3"
   }
 }
