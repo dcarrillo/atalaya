@@ -1,5 +1,31 @@
-import { describe, it, expect } from 'vitest';
-import { getBarColor } from './uptime-bars.js';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { getBarColor, uptimeWindowLabel } from './uptime-bars.js';
+
+describe('uptimeWindowLabel', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-06-15T12:00:00Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('returns the full window label when there is no data', () => {
+    expect(uptimeWindowLabel(undefined)).toBe('90-day uptime');
+  });
+
+  it('returns the full window label once data covers the window', () => {
+    const now = Math.floor(Date.now() / 1000);
+    expect(uptimeWindowLabel(now - 90 * 86400)).toBe('90-day uptime');
+    expect(uptimeWindowLabel(now - 89 * 86400)).toBe('90-day uptime');
+  });
+
+  it('names the first day with data while history is shorter than the window', () => {
+    const since = Math.floor(new Date('2024-06-13T05:00:00Z').getTime() / 1000);
+    expect(uptimeWindowLabel(since)).toBe('Uptime since 2024-06-13');
+  });
+});
 
 describe('getBarColor', () => {
   it('returns "no-data" for null/undefined', () => {

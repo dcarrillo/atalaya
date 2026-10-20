@@ -69,6 +69,8 @@ export async function getStatusApiData(
     const hourly = hourlyByMonitor.get(state.monitor_name) ?? [];
     const dailyHistory = computeDailyHistory(hourly);
     const uptimePercent = computeOverallUptime(hourly);
+    const dataSince =
+      hourly.length > 0 ? Math.min(...hourly.map(h => h.hour_timestamp)) : undefined;
 
     const status: 'up' | 'down' | 'unknown' | 'maintenance' =
       state.current_status === 'maintenance'
@@ -89,6 +91,7 @@ export async function getStatusApiData(
       status,
       lastChecked: state.last_checked ?? null,
       uptimePercent,
+      dataSince,
       dailyHistory,
       recentChecks: apiRecentChecks,
     };
@@ -136,12 +139,8 @@ function computeDailyHistory(hourly: HourlyRow[]): ApiDayStatus[] {
   return days;
 }
 
-function computeOverallUptime(hourly: HourlyRow[]): number {
-  if (hourly.length === 0) {
-    return 100;
-  }
-
+function computeOverallUptime(hourly: HourlyRow[]): number | undefined {
   const totalChecks = hourly.reduce((sum, h) => sum + h.total_checks, 0);
   const successfulChecks = hourly.reduce((sum, h) => sum + h.successful_checks, 0);
-  return totalChecks > 0 ? (successfulChecks / totalChecks) * 100 : 100;
+  return totalChecks > 0 ? (successfulChecks / totalChecks) * 100 : undefined;
 }

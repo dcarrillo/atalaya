@@ -196,6 +196,47 @@ describe('getStatusApiData', () => {
     expect(result.title).toBe('Test Status Page');
   });
 
+  it('reports no uptime, rather than 100%, for a monitor with no hourly data', async () => {
+    const now = Math.floor(Date.now() / 1000);
+    const db = mockD1Database({
+      states: [{ monitor_name: 'new-monitor', current_status: 'up', last_checked: now }],
+      hourly: [],
+      recent: [],
+    });
+
+    const result = await getStatusApiData(db, testConfig);
+
+    expect(result.monitors[0].uptimePercent).toBeUndefined();
+    expect(result.monitors[0].dataSince).toBeUndefined();
+  });
+
+  it('reports the earliest hour with data as dataSince', async () => {
+    const now = Math.floor(Date.now() / 1000);
+    const db = mockD1Database({
+      states: [{ monitor_name: 'test', current_status: 'up', last_checked: now }],
+      hourly: [
+        {
+          monitor_name: 'test',
+          hour_timestamp: now - 3600,
+          total_checks: 60,
+          successful_checks: 60,
+        },
+        {
+          monitor_name: 'test',
+          hour_timestamp: now - 2 * 86400,
+          total_checks: 60,
+          successful_checks: 30,
+        },
+      ],
+      recent: [],
+    });
+
+    const result = await getStatusApiData(db, testConfig);
+
+    expect(result.monitors[0].dataSince).toBe(now - 2 * 86400);
+    expect(result.monitors[0].uptimePercent).toBeCloseTo(75, 5);
+  });
+
   it('uses default title when no config is provided', async () => {
     const db = mockD1Database({ states: [], hourly: [], recent: [] });
     const result = await getStatusApiData(db);

@@ -1,3 +1,8 @@
+export function formatUptime(uptimePercent: number | undefined): string {
+  if (uptimePercent == null) return '—';
+  return `${uptimePercent.toFixed(2)}%`;
+}
+
 export function formatLastChecked(timestamp: number | undefined): string {
   if (timestamp == null) return 'Never';
   const now = Math.floor(Date.now() / 1000);

@@ -1,7 +1,7 @@
 ---
 import type { ApiMonitorStatus } from '@worker/types';
 import UptimeBars from './UptimeBars.astro';
-import { formatLastChecked } from '../lib/monitor-card.js';
+import { formatLastChecked, formatUptime } from '../lib/monitor-card.js';
 
 interface Props {
   monitor: ApiMonitorStatus;
@@ -9,7 +9,10 @@ interface Props {
 
 const { monitor } = Astro.props;
 
-const uptimeFormatted = monitor.uptimePercent.toFixed(2);
+const uptimeFormatted = formatUptime(monitor.uptimePercent);
+const uptimeAriaLabel =
+  monitor.status === 'maintenance' ? 'Scheduled Maintenance' :
+  monitor.uptimePercent == null ? 'No uptime data yet' : undefined;
 const lastCheckedText = formatLastChecked(monitor.lastChecked);
 
 const statusLabel =
@@ -38,11 +41,11 @@ const chartData = JSON.stringify({
         <span class="maintenance-badge" title="Scheduled Maintenance">Maintenance</span>
       )}
     </h3>
-    <span class:list={['monitor-uptime', `uptime-${monitor.status}`]} aria-label={monitor.status === 'maintenance' ? 'Scheduled Maintenance' : undefined}>{uptimeFormatted}%</span>
+    <span class:list={['monitor-uptime', `uptime-${monitor.status}`]} aria-label={uptimeAriaLabel}>{uptimeFormatted}</span>
     <span class="monitor-meta">{lastCheckedText}</span>
   </div>
 
-  <UptimeBars dailyHistory={monitor.dailyHistory} />
+  <UptimeBars dailyHistory={monitor.dailyHistory} dataSince={monitor.dataSince} />
 
   <div class="chart-section">
     <div class="chart-labels">

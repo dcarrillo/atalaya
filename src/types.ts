@@ -117,7 +117,10 @@ export type ApiMonitorStatus = {
    */
   status: 'up' | 'down' | 'unknown' | 'maintenance';
   lastChecked: number | undefined;
-  uptimePercent: number;
+  /** Uptime over the history window; undefined when there is no data yet. */
+  uptimePercent: number | undefined;
+  /** Unix seconds of the earliest hour with data in the window; undefined when there is none. */
+  dataSince: number | undefined;
   dailyHistory: ApiDayStatus[];
   recentChecks: ApiRecentCheck[];
 };
