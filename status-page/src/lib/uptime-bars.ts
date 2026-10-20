@@ -1,3 +1,6 @@
+import type { ApiDayStatus } from '@worker/types';
+import { UPTIME_WINDOW_DAYS } from '../../../src/constants.js';
+
 export function getBarColor(uptimePercent: number | undefined): string {
   if (uptimePercent == null) return 'no-data';
   if (uptimePercent >= 99.8) return 'up';
@@ -5,12 +8,19 @@ export function getBarColor(uptimePercent: number | undefined): string {
   return 'down';
 }
 
-const FULL_WINDOW_DAYS = 89;
+export interface UptimeWindowLabels {
+  heading: string;
+  start: string;
+}
 
-export function uptimeWindowLabel(dataSince: number | undefined): string {
-  if (dataSince == null) return '90-day uptime';
-  const now = Math.floor(Date.now() / 1000);
-  if (now - dataSince >= FULL_WINDOW_DAYS * 86400) return '90-day uptime';
-  const date = new Date(dataSince * 1000).toISOString().split('T')[0];
-  return `Uptime since ${date}`;
+export function uptimeWindowLabels(dailyHistory: ApiDayStatus[]): UptimeWindowLabels {
+  const fullHeading = `${UPTIME_WINDOW_DAYS}-day uptime`;
+  const fullStart = `${UPTIME_WINDOW_DAYS}d ago`;
+
+  const firstDataDay = dailyHistory.find(day => day.uptimePercent != null);
+  if (firstDataDay === undefined || firstDataDay === dailyHistory[0]) {
+    return { heading: fullHeading, start: fullStart };
+  }
+
+  return { heading: `Uptime since ${firstDataDay.date}`, start: firstDataDay.date };
 }

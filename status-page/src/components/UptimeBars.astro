@@ -1,17 +1,17 @@
 ---
 import type { ApiDayStatus } from '@worker/types';
-import { getBarColor, uptimeWindowLabel } from '../lib/uptime-bars.js';
+import { getBarColor, uptimeWindowLabels } from '../lib/uptime-bars.js';
 
 interface Props {
   dailyHistory: ApiDayStatus[];
-  dataSince: number | undefined;
 }
 
-const { dailyHistory, dataSince } = Astro.props;
+const { dailyHistory } = Astro.props;
+const { heading, start } = uptimeWindowLabels(dailyHistory);
 ---
 
 <div class="uptime-section">
-  <div class="section-label">{uptimeWindowLabel(dataSince)}</div>
+  <div class="section-label">{heading}</div>
   <div class="uptime-bars">
     {
       dailyHistory.map(day => {
@@ -33,7 +33,7 @@ const { dailyHistory, dataSince } = Astro.props;
     }
   </div>
   <div class="bar-labels">
-    <span>90d ago</span>
+    <span>{start}</span>
     <span>Today</span>
   </div>
 </div>

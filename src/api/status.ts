@@ -5,6 +5,7 @@ import type {
   ApiRecentCheck,
 } from '../types.js';
 import type { Config } from '../config/types.js';
+import { UPTIME_WINDOW_DAYS } from '../constants.js';
 
 type HourlyRow = {
   monitor_name: string;
@@ -35,7 +36,7 @@ export async function getStatusApiData(
     .bind(1)
     .all<MonitorStateRow>();
 
-  const ninetyDaysAgo = Math.floor(Date.now() / 1000) - 90 * 24 * 60 * 60;
+  const ninetyDaysAgo = Math.floor(Date.now() / 1000) - UPTIME_WINDOW_DAYS * 24 * 60 * 60;
   const hourlyData = await database
     .prepare(
       'SELECT monitor_name, hour_timestamp, total_checks, successful_checks FROM check_results_hourly WHERE hour_timestamp >= ?'
@@ -114,9 +115,9 @@ export async function getStatusApiData(
 
 function computeDailyHistory(hourly: HourlyRow[]): ApiDayStatus[] {
   const now = new Date();
-  const days: ApiDayStatus[] = Array.from({ length: 90 }, (_, i) => {
+  const days: ApiDayStatus[] = Array.from({ length: UPTIME_WINDOW_DAYS }, (_, i) => {
     const date = new Date(now);
-    date.setDate(date.getDate() - (89 - i));
+    date.setDate(date.getDate() - (UPTIME_WINDOW_DAYS - 1 - i));
     date.setHours(0, 0, 0, 0);
     const dayStart = Math.floor(date.getTime() / 1000);
     const dayEnd = dayStart + 24 * 60 * 60;

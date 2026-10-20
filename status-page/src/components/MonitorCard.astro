@@ -10,7 +10,7 @@ interface Props {
 const { monitor } = Astro.props;
 
 const uptimeFormatted = formatUptime(monitor.uptimePercent);
-const uptimeAriaLabel =
+const uptimeAccessibleText =
   monitor.status === 'maintenance' ? 'Scheduled Maintenance' :
   monitor.uptimePercent == null ? 'No uptime data yet' : undefined;
 const lastCheckedText = formatLastChecked(monitor.lastChecked);
@@ -41,11 +41,14 @@ const chartData = JSON.stringify({
         <span class="maintenance-badge" title="Scheduled Maintenance">Maintenance</span>
       )}
     </h3>
-    <span class:list={['monitor-uptime', `uptime-${monitor.status}`]} aria-label={uptimeAriaLabel}>{uptimeFormatted}</span>
+    <span class:list={['monitor-uptime', `uptime-${monitor.status}`]}>
+      <span aria-hidden={uptimeAccessibleText ? 'true' : undefined}>{uptimeFormatted}</span>
+      {uptimeAccessibleText && <span class="sr-only">{uptimeAccessibleText}</span>}
+    </span>
     <span class="monitor-meta">{lastCheckedText}</span>
   </div>
 
-  <UptimeBars dailyHistory={monitor.dailyHistory} dataSince={monitor.dataSince} />
+  <UptimeBars dailyHistory={monitor.dailyHistory} />
 
   <div class="chart-section">
     <div class="chart-labels">

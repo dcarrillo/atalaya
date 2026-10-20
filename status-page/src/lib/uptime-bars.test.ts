@@ -1,29 +1,35 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getBarColor, uptimeWindowLabel } from './uptime-bars.js';
+import { describe, it, expect } from 'vitest';
+import { getBarColor, uptimeWindowLabels } from './uptime-bars.js';
+import type { ApiDayStatus } from '@worker/types';
 
-describe('uptimeWindowLabel', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2024-06-15T12:00:00Z'));
+function day(date: string, uptimePercent: number | undefined): ApiDayStatus {
+  return { date, uptimePercent };
+}
+
+describe('uptimeWindowLabels', () => {
+  it('returns the full window labels when there is no data', () => {
+    expect(uptimeWindowLabels([])).toEqual({ heading: '90-day uptime', start: '90d ago' });
+    expect(uptimeWindowLabels([day('2024-03-17', undefined)])).toEqual({
+      heading: '90-day uptime',
+      start: '90d ago',
+    });
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it('returns the full window label when there is no data', () => {
-    expect(uptimeWindowLabel(undefined)).toBe('90-day uptime');
-  });
-
-  it('returns the full window label once data covers the window', () => {
-    const now = Math.floor(Date.now() / 1000);
-    expect(uptimeWindowLabel(now - 90 * 86400)).toBe('90-day uptime');
-    expect(uptimeWindowLabel(now - 89 * 86400)).toBe('90-day uptime');
+  it('returns the full window labels once the oldest bucket has data', () => {
+    const history = [day('2024-03-17', 99.9), day('2024-03-18', undefined)];
+    expect(uptimeWindowLabels(history)).toEqual({ heading: '90-day uptime', start: '90d ago' });
   });
 
   it('names the first day with data while history is shorter than the window', () => {
-    const since = Math.floor(new Date('2024-06-13T05:00:00Z').getTime() / 1000);
-    expect(uptimeWindowLabel(since)).toBe('Uptime since 2024-06-13');
+    const history = [
+      day('2024-06-13', undefined),
+      day('2024-06-14', undefined),
+      day('2024-06-15', 100),
+    ];
+    expect(uptimeWindowLabels(history)).toEqual({
+      heading: 'Uptime since 2024-06-15',
+      start: '2024-06-15',
+    });
   });
 });
 
