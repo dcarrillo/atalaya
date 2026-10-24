@@ -15,14 +15,14 @@
     "lint:fix": "eslint --fix"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.10",
+    "@astrojs/check": "^0.9.11",
     "@astrojs/cloudflare": "^13.7.0",
     "astro": "^6.4.8",
     "cookie": "^1.1.1",
     "uplot": "^1.6.32"
   },
   "devDependencies": {
-    "@typescript-eslint/parser": "^8.71.2",
+    "@typescript-eslint/parser": "^8.72.0",
     "astro-eslint-parser": "^1.4.0",
     "eslint": "^10.13.0",
     "eslint-plugin-astro": "^1.7.0",
