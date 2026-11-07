@@ -82,7 +82,7 @@ describe('worker fetch handler', () => {
       expect(response.headers.get('Cache-Control')).toBe('public, max-age=60');
     });
 
-    it('should not set Cache-Control when STATUS_PUBLIC is not true', async () => {
+    it('should set Cache-Control: private when STATUS_PUBLIC is not true', async () => {
       const worker = await getWorker();
       const request = new Request('https://example.com/');
       const envWithoutPublic = { ...mockEnv, STATUS_PUBLIC: 'false' };
@@ -90,10 +90,11 @@ describe('worker fetch handler', () => {
       const response = await worker.fetch(request, envWithoutPublic, mockCtx);
 
       expect(response.status).toBe(200);
-      expect(response.headers.get('Cache-Control')).toBeNull();
+      expect(response.headers.get('Cache-Control')).toBe('private, no-store');
+      expect(response.headers.get('Vary')).toBe('Authorization');
     });
 
-    it('should not set Cache-Control when STATUS_PUBLIC is undefined', async () => {
+    it('should set Cache-Control: private when STATUS_PUBLIC is undefined', async () => {
       const worker = await getWorker();
       const request = new Request('https://example.com/');
       const envWithoutPublic = { ...mockEnv };
@@ -102,7 +103,8 @@ describe('worker fetch handler', () => {
       const response = await worker.fetch(request, envWithoutPublic, mockCtx);
 
       expect(response.status).toBe(200);
-      expect(response.headers.get('Cache-Control')).toBeNull();
+      expect(response.headers.get('Cache-Control')).toBe('private, no-store');
+      expect(response.headers.get('Vary')).toBe('Authorization');
     });
 
     it('should not set Cache-Control for non-GET requests', async () => {

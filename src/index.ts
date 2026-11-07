@@ -43,13 +43,21 @@ const worker = {
           ctx
         );
 
-        if (request.method === 'GET' && env.STATUS_PUBLIC === 'true' && response.status === 200) {
-          const responseWithCache = new Response(response.body, response);
-          responseWithCache.headers.set('Cache-Control', 'public, max-age=60');
-          return responseWithCache;
+        if (env.STATUS_PUBLIC === 'true') {
+          if (request.method === 'GET' && response.status === 200) {
+            const responseWithCache = new Response(response.body, response);
+            responseWithCache.headers.set('Cache-Control', 'public, max-age=60');
+            return responseWithCache;
+          }
+
+          return response;
         }
 
-        return response;
+        // Authenticated response: never let a shared cache store or replay the page.
+        const privateResponse = new Response(response.body, response);
+        privateResponse.headers.set('Cache-Control', 'private, no-store');
+        privateResponse.headers.append('Vary', 'Authorization');
+        return privateResponse;
       }
 
       return new Response('Not Found', { status: 404 });
