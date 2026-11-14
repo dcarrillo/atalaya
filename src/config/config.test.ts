@@ -257,4 +257,57 @@ monitors:
       expect(config.monitors[0].expectedBodyContains).toBe('');
     }
   });
+
+  it('parses incident timeline entries', () => {
+    const yaml = `
+incidents:
+  - time: "2026-11-14T10:30:00Z"
+    description: "Elevated latency on the API gateway."
+  - time: "2026-11-13T08:00:00Z"
+    description: "Scheduled database maintenance."
+`;
+    const config = parseConfig(yaml);
+
+    expect(config.incidents).toHaveLength(2);
+    expect(config.incidents[0].time).toBe('2026-11-14T10:30:00Z');
+    expect(config.incidents[0].description).toBe('Elevated latency on the API gateway.');
+    expect(config.incidents[1].description).toBe('Scheduled database maintenance.');
+  });
+
+  it('sorts incidents newest first', () => {
+    const yaml = `
+incidents:
+  - time: "2026-11-12T08:00:00Z"
+    description: "Older incident."
+  - time: "2026-11-14T10:30:00Z"
+    description: "Newer incident."
+`;
+    const config = parseConfig(yaml);
+
+    expect(config.incidents[0].description).toBe('Newer incident.');
+    expect(config.incidents[1].description).toBe('Older incident.');
+  });
+
+  it('drops invalid incident entries', () => {
+    const yaml = `
+incidents:
+  - time: "2026-11-14T10:30:00Z"
+    description: "Valid."
+  - time: "not-a-time"
+    description: "Invalid time."
+  - time: "2026-11-13T08:00:00"
+    description: "Missing Z."
+  - time: "2026-11-12T08:00:00Z"
+    description: ""
+`;
+    const config = parseConfig(yaml);
+
+    expect(config.incidents).toHaveLength(1);
+    expect(config.incidents[0].description).toBe('Valid.');
+  });
+
+  it('defaults incidents to empty array', () => {
+    const config = parseConfig('monitors: []');
+    expect(config.incidents).toEqual([]);
+  });
 });

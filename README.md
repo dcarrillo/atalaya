@@ -47,6 +47,7 @@ __ ,--~'                  ~~----____
   - Basic auth or public access modes.
   - Dark/light mode.
   - Custom banner image support with optional clickable link.
+  - Configurable incident timeline.
 
 ## Documentation
 
@@ -87,6 +88,6 @@ pnpm check:pages        # pages (astro check + tsc + lint)
 - [ ] Add support for TLS checks (certificate validity, expiration). Apparently, the Workers API does not support certificate data access, even at the socket level. An external service may be required.
 - [x] Refine the status page to look... well... less AI-generated.
 - [x] Per-monitor maintenance windows
-- [ ] Initial support for incident management (manual status overrides, incident timeline).
+- [x] Initial support for incident management (manual status overrides).
 - [x] Branded status page (simple custom banner).
 - [ ] Add support for notifications other than webhooks.

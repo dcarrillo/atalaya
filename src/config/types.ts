@@ -6,6 +6,13 @@ export type Settings = {
   title?: string;
 };
 
+export type Incident = {
+  /** ISO 8601 UTC timestamp (with trailing 'Z') for this timeline entry. */
+  time: string;
+  /** Free-text description of the incident. */
+  description: string;
+};
+
 type AlertBase = { name: string };
 
 export type WebhookAlert = AlertBase & {
@@ -58,6 +65,7 @@ export type Config = {
   settings: Settings;
   alerts: Alert[];
   monitors: Monitor[];
+  incidents: Incident[];
 };
 
 export type RawYamlConfig = {
@@ -93,5 +101,9 @@ export type RawYamlConfig = {
     alerts?: string[];
     region?: string; // Cloudflare region code for regional checks
     maintenance?: { start: string; end: string }[];
+  }>;
+  incidents?: Array<{
+    time?: string;
+    description?: string;
   }>;
 };

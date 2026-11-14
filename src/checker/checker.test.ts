@@ -12,6 +12,7 @@ describe('prepareChecks', () => {
         defaultTimeoutMs: 5000,
         defaultFailureThreshold: 2,
       },
+      incidents: [],
       alerts: [],
       monitors: [
         {
@@ -51,6 +52,7 @@ describe('prepareChecks', () => {
         defaultTimeoutMs: 0,
         defaultFailureThreshold: 0,
       },
+      incidents: [],
       alerts: [],
       monitors: [],
     };
@@ -67,6 +69,7 @@ describe('prepareChecks', () => {
         defaultTimeoutMs: 5000,
         defaultFailureThreshold: 2,
       },
+      incidents: [],
       alerts: [],
       monitors: [
         {
@@ -96,6 +99,7 @@ describe('prepareChecks', () => {
         defaultTimeoutMs: 5000,
         defaultFailureThreshold: 2,
       },
+      incidents: [],
       alerts: [],
       monitors: [
         {
@@ -129,6 +133,7 @@ describe('prepareChecks', () => {
         defaultTimeoutMs: 5000,
         defaultFailureThreshold: 2,
       },
+      incidents: [],
       alerts: [],
       monitors: [
         {

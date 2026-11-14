@@ -110,6 +110,7 @@ export async function getStatusApiData(
     },
     lastUpdated: Math.floor(Date.now() / 1000),
     title: config?.settings.title ?? 'Atalaya Uptime Monitor',
+    incidents: config?.incidents ?? [],
   };
 }
 

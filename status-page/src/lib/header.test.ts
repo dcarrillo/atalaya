@@ -1,5 +1,5 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import { formatAbsoluteTime } from './header.js';
+import { formatAbsoluteTime, formatIncidentTime } from './header.js';
 
 describe('formatAbsoluteTime', () => {
   const origTZ = process.env.TZ;
@@ -23,5 +23,21 @@ describe('formatAbsoluteTime', () => {
     const result = formatAbsoluteTime(1719792000);
     expect(result).toContain('Jul');
     expect(result).toContain('1,');
+  });
+});
+
+describe('formatIncidentTime', () => {
+  const origTZ = process.env.TZ;
+
+  afterAll(() => {
+    process.env.TZ = origTZ;
+  });
+
+  it('formats an ISO 8601 UTC timestamp with year', () => {
+    process.env.TZ = 'UTC';
+    const result = formatIncidentTime('2026-11-14T10:30:00Z');
+    expect(result).toContain('2026');
+    expect(result).toContain('Nov');
+    expect(result).toContain('10:30');
   });
 });

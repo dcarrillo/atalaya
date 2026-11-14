@@ -21,6 +21,7 @@ describe('processResults', () => {
         defaultTimeoutMs: 5000,
         defaultFailureThreshold: 2,
       },
+      incidents: [],
       alerts: [
         {
           type: 'webhook' as const,
@@ -85,6 +86,7 @@ describe('processResults', () => {
         defaultTimeoutMs: 5000,
         defaultFailureThreshold: 2,
       },
+      incidents: [],
       alerts: [
         {
           type: 'webhook' as const,
@@ -147,6 +149,7 @@ describe('processResults', () => {
         defaultTimeoutMs: 5000,
         defaultFailureThreshold: 3,
       },
+      incidents: [],
       alerts: [
         {
           type: 'webhook' as const,
@@ -208,6 +211,7 @@ describe('processResults', () => {
         defaultTimeoutMs: 5000,
         defaultFailureThreshold: 2,
       },
+      incidents: [],
       alerts: [],
       monitors: [
         {
@@ -251,6 +255,7 @@ describe('processResults', () => {
         defaultTimeoutMs: 5000,
         defaultFailureThreshold: 2,
       },
+      incidents: [],
       alerts: [],
       monitors: [],
     };
@@ -270,6 +275,7 @@ describe('processResults', () => {
         defaultTimeoutMs: 5000,
         defaultFailureThreshold: 2,
       },
+      incidents: [],
       alerts: [],
       monitors: [
         {

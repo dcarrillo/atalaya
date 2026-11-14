@@ -1,3 +1,7 @@
+import type { Incident } from './config/types.js';
+
+export type { Incident };
+
 interface CheckRequestBase {
   name: string;
   target: string;
@@ -104,6 +108,7 @@ export type StatusApiResponse = {
   };
   lastUpdated: number;
   title: string;
+  incidents: Incident[];
 };
 
 export type ApiMonitorStatus = {
