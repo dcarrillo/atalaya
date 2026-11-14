@@ -11,11 +11,14 @@ interface Props {
     url?: string;
     link?: string;
   };
+  incidents?: Incident[];
 }
 
+import type { Incident } from '@worker/types';
+import IncidentTimeline from './IncidentTimeline.astro';
 import { formatAbsoluteTime } from '../lib/header.js';
 
-const { summary, lastUpdated, title, banner } = Astro.props;
+const { summary, lastUpdated, title, banner, incidents } = Astro.props;
 const absoluteTime = formatAbsoluteTime(lastUpdated);
 ---
 
@@ -68,6 +71,8 @@ const absoluteTime = formatAbsoluteTime(lastUpdated);
       )}
     </span>
   </div>
+
+  <IncidentTimeline incidents={incidents} />
 </header>
 
 <script>

@@ -10,6 +10,7 @@ describe('formatWebhookPayload', () => {
       defaultTimeoutMs: 5000,
       defaultFailureThreshold: 2,
     },
+    incidents: [],
     alerts: [
       {
         name: 'test',

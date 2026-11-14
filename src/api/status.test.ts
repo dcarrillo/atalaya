@@ -36,6 +36,7 @@ const testConfig: Config = {
   },
   monitors: [],
   alerts: [],
+  incidents: [],
 };
 
 describe('getStatusApiData', () => {
@@ -249,5 +250,25 @@ describe('getStatusApiData', () => {
     const result = await getStatusApiData(db, { settings: {} } as Config);
 
     expect(result.title).toBe('Atalaya Uptime Monitor');
+  });
+
+  it('returns incidents from config', async () => {
+    const db = mockD1Database({ states: [], hourly: [], recent: [] });
+    const config: Config = {
+      ...testConfig,
+      incidents: [{ time: '2026-11-14T10:30:00Z', description: 'An incident.' }],
+    };
+    const result = await getStatusApiData(db, config);
+
+    expect(result.incidents).toEqual([
+      { time: '2026-11-14T10:30:00Z', description: 'An incident.' },
+    ]);
+  });
+
+  it('defaults incidents to empty array when no config is provided', async () => {
+    const db = mockD1Database({ states: [], hourly: [], recent: [] });
+    const result = await getStatusApiData(db);
+
+    expect(result.incidents).toEqual([]);
   });
 });

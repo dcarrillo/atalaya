@@ -1,6 +1,6 @@
 import yaml from 'js-yaml';
 import { isValidRegion } from '../utils/region.js';
-import type { Config, RawYamlConfig, Settings, Alert, Monitor } from './types.js';
+import type { Config, RawYamlConfig, Settings, Alert, Monitor, Incident } from './types.js';
 
 const envVarRegex = /\$\{([^\}]+)\}/gv;
 
@@ -135,7 +135,25 @@ function applyDefaults(raw: RawYamlConfig): Config {
     }
   });
 
-  return { settings, alerts, monitors };
+  const incidents: Incident[] = (raw.incidents ?? [])
+    .flatMap((entry): Incident[] => {
+      const { time, description } = entry;
+      if (
+        typeof time !== 'string' ||
+        time.length === 0 ||
+        typeof description !== 'string' ||
+        description.length === 0 ||
+        !time.endsWith('Z') ||
+        Number.isNaN(Date.parse(time))
+      ) {
+        console.warn(JSON.stringify({ event: 'invalid_incident', time, description }));
+        return [];
+      }
+      return [{ time, description }];
+    })
+    .toSorted((a, b) => Date.parse(b.time) - Date.parse(a.time));
+
+  return { settings, alerts, monitors, incidents };
 }
 
 export function parseConfig(yamlContent: string, env?: Record<string, string | undefined>): Config {

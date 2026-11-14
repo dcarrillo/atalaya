@@ -126,6 +126,10 @@
   --color-maintenance-bg:    oklch(65% 0.18 95 / 0.1);
   --color-maintenance-border: oklch(65% 0.18 95 / 0.15);
 
+  --color-incident:        oklch(55% 0.16 70);
+  --color-incident-bg:     oklch(55% 0.16 70 / 0.1);
+  --color-incident-border: oklch(55% 0.16 70 / 0.18);
+
   --color-no-data: oklch(75% 0.04 250);
 }
 
@@ -166,6 +170,10 @@
   --color-maintenance-glow:  oklch(72% 0.22 90 / 0.55);
   --color-maintenance-bg:    oklch(72% 0.22 90 / 0.12);
   --color-maintenance-border: oklch(72% 0.22 90 / 0.18);
+
+  --color-incident:        oklch(75% 0.16 70);
+  --color-incident-bg:     oklch(75% 0.16 70 / 0.12);
+  --color-incident-border: oklch(75% 0.16 70 / 0.18);
 
   --color-no-data: oklch(45% 0.06 250);
 }

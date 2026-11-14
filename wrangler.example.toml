@@ -38,6 +38,14 @@ settings:
   default_timeout_ms: 5000
   default_failure_threshold: 2
 
+# Optional global incident timeline - rendered on the status page below the "Updated" line.
+# Entries are shown newest first. `time` must be ISO 8601 UTC with trailing 'Z'.
+incidents:
+  - time: "2026-11-14T10:30:00Z"
+    description: "Elevated latency on the API gateway."
+  - time: "2026-11-13T08:00:00Z"
+    description: "Scheduled database maintenance."
+
 alerts:
   - name: "telegram"
     type: webhook
