@@ -4,7 +4,7 @@ interface Props {
   description?: string;
 }
 
-const { title, description = 'Real-time uptime monitoring dashboard' } = Astro.props;
+const { title, description = 'Live service status.' } = Astro.props;
 ---
 
 <!doctype html>
@@ -20,64 +20,56 @@ const { title, description = 'Real-time uptime monitoring dashboard' } = Astro.p
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="mask-icon" href="/favicon.svg" color="#60a5fa" />
+    <link rel="preload" href="/fonts/barlow-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin />
     <title>{title}</title>
-  </head>
-  <body>
-    <slot />
-    <script src="../scripts/charts.ts"></script>
     <script is:inline>
-      (function() {
+      (function () {
         var STORAGE_KEY = 'atalaya-theme';
+        var root = document.documentElement;
         var prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
 
-        function getPreferredTheme() {
-          var stored = localStorage.getItem(STORAGE_KEY);
-          if (stored === 'light' || stored === 'dark') return stored;
-          return prefersDark.matches ? 'dark' : 'light';
+        function stored() {
+          var value = localStorage.getItem(STORAGE_KEY);
+          return value === 'light' || value === 'dark' ? value : null;
         }
 
-        /** @param {'light'|'dark'} theme */
-        function setTheme(theme) {
-          document.documentElement.setAttribute('data-theme', theme);
-          localStorage.setItem(STORAGE_KEY, theme);
+        function apply(theme) {
+          root.setAttribute('data-theme', theme);
         }
 
-        setTheme(getPreferredTheme());
+        apply(stored() || (prefersDark.matches ? 'dark' : 'light'));
 
-        prefersDark.addEventListener('change', function(e) {
-          if (!localStorage.getItem(STORAGE_KEY)) {
-            setTheme(e.matches ? 'dark' : 'light');
-          }
+        prefersDark.addEventListener('change', function (event) {
+          if (stored()) return;
+          var theme = event.matches ? 'dark' : 'light';
+          apply(theme);
+          document.dispatchEvent(new CustomEvent('atalaya:theme', { detail: { theme: theme } }));
         });
+
+        window.__atalayaTheme = {
+          get: function () {
+            return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+          },
+          set: function (theme) {
+            root.setAttribute('data-theme', theme);
+            localStorage.setItem(STORAGE_KEY, theme);
+          },
+          clear: function () {
+            localStorage.removeItem(STORAGE_KEY);
+          },
+        };
       })();
     </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to status</a>
+    <slot />
+    <script src="../scripts/charts.ts"></script>
   </body>
 </html>
 
 <style is:global>
   @import '../styles/global.css';
-
-  .skip-link {
-    position: absolute;
-    top: -2.5rem;
-    left: 0;
-    background: var(--color-accent);
-    color: var(--color-accent-ink);
-    padding: var(--space-xs) var(--space-md);
-    border-radius: var(--radius-sm);
-    text-decoration: none;
-    font-weight: var(--font-semibold);
-    font-family: var(--font-display);
-    z-index: var(--z-sticky);
-  }
-
-  .skip-link:focus {
-    top: var(--space-md);
-    left: var(--space-md);
-  }
 </style>

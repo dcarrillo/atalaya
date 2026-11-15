@@ -1,22 +1,37 @@
 <footer class="footer">
-  <span>Powered by <a href="https://github.com/dcarrillo/atalaya" target="_blank" rel="noopener noreferrer">Atalaya</a></span>
+  <p>Powered by <a href="https://github.com/dcarrillo/atalaya" target="_blank" rel="noopener noreferrer">Atalaya</a></p>
+  <p>All times UTC</p>
 </footer>
 
 <style>
   .footer {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-lg);
     margin-top: var(--space-xl);
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--color-rule);
-    font-size: var(--text-sm);
-    color: var(--color-ink-3);
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--rule);
     font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    color: var(--ink-3);
   }
+
   .footer a {
-    color: var(--color-accent);
+    color: var(--ink-2);
     text-decoration: none;
   }
+
   .footer a:hover {
-    color: var(--color-ink);
+    color: var(--ink);
     text-decoration: underline;
+  }
+
+  @media (max-width: 560px) {
+    .footer {
+      flex-direction: column;
+      gap: 3px;
+    }
   }
 </style>

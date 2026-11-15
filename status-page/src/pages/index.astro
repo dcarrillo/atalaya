@@ -3,14 +3,19 @@ import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import MonitorCard from '../components/MonitorCard.astro';
 import Footer from '../components/Footer.astro';
+import UtilityBar from '../components/UtilityBar.astro';
 import { getStatusApiData } from '../lib/api.js';
 import { parseConfig } from '../../../src/config/index.js';
 import { interpolateSecrets } from '../../../src/utils/interpolate.js';
+import type { Config } from '../../../src/config/types.js';
+import type { TraceStats, Verdict } from '../lib/status.js';
+import { computeTraceStats, overallVerdict, sortMonitors } from '../lib/status.js';
 import { env } from 'cloudflare:workers';
 
 let data: Awaited<ReturnType<typeof getStatusApiData>> | null = null;
 let error: Error | null = null;
 let banner: { url: string; link?: string } | undefined = undefined;
+let config: Config | null = null;
 
 try {
   const envAny = env as any;
@@ -19,7 +24,7 @@ try {
     throw new Error('MONITORS_CONFIG environment variable is not set or is not a string');
   }
   const configYaml = interpolateSecrets(monitorsConfig, envAny);
-  const config = parseConfig(configYaml);
+  config = parseConfig(configYaml);
   data = await getStatusApiData(env.DB, config);
 
   const bannerUrl = envAny.STATUS_BANNER_URL;
@@ -30,170 +35,178 @@ try {
   error = err as Error;
 }
 
-const sortOrder = { down: 0, maintenance: 1, unknown: 2, up: 3 } as const;
-const sortedMonitors = data ? [...data.monitors].sort(
-  (a, b) => (sortOrder[a.status] ?? 1) - (sortOrder[b.status] ?? 1)
-) : [];
+const now = data?.lastUpdated ?? Math.floor(Date.now() / 1000);
+const sortedMonitors = data ? sortMonitors(data.monitors) : [];
+
+const statsById: Record<string, TraceStats> = {};
+if (data) {
+  for (const monitor of data.monitors) {
+    statsById[monitor.name] = computeTraceStats(monitor.recentChecks);
+  }
+}
+
+const verdict: Verdict = overallVerdict(sortedMonitors);
+
+let onset: { label: string; timestamp: number } | undefined;
+if (data) {
+  const affected = sortedMonitors.filter(
+    monitor => monitor.status === 'down' || monitor.status === 'maintenance'
+  );
+  if (affected.length === 1) {
+    const monitor = affected[0];
+    const stats = statsById[monitor.name];
+    const since = monitor.status === 'down' ? stats?.downSince : stats?.maintenanceSince;
+    if (since) {
+      onset = {
+        label: monitor.status === 'down' ? 'Down' : 'Maintenance',
+        timestamp: since,
+      };
+    }
+  }
+}
+
+const title = data?.title ?? config?.settings.title ?? 'Atalaya Uptime Monitor';
+const description = data
+  ? `${verdict.label} — ${verdict.detail}. Live status for ${title}.`
+  : 'Live service status.';
 ---
 
-<Layout title={data!.title}>
-  <main id="main-content" class="container">
-    {error ? (
-      <div class="error-state">
-        <svg class="state-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        <h2>Service Temporarily Unavailable</h2>
-        <p>We're having trouble loading status data. Please try again in a moment.</p>
-        <button class="retry-button" onclick="window.location.reload()" aria-label="Retry loading status data">Retry</button>
-      </div>
-    ) : !data ? (
-      <div class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>Loading status data...</p>
-      </div>
-    ) : data!.monitors.length === 0 ? (
-      <div class="empty-state">
-        <svg class="state-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="18" y1="20" x2="18" y2="10"/>
-          <line x1="12" y1="20" x2="12" y2="4"/>
-          <line x1="6" y1="20" x2="6" y2="14"/>
-        </svg>
-        <h2>No Monitors Configured</h2>
-        <p>Add monitors to start tracking your services.</p>
-      </div>
-    ) : (
-      <>
-        <Header summary={data!.summary} lastUpdated={data!.lastUpdated} title={data!.title} banner={banner} incidents={data!.incidents} />
-        <div class="monitors">
-          {sortedMonitors.map(monitor => <MonitorCard monitor={monitor} />)}
-        </div>
-      </>
-    )}
-    <Footer />
+<Layout title={title} description={description}>
+  <main id="main-content" class="page">
+    {
+      error ? (
+        <>
+          <UtilityBar title={title} />
+          <section class="state" role="alert">
+            <h1>Status unavailable</h1>
+            <p>Status data could not be loaded. The monitors may still be running.</p>
+            <button class="retry" type="button" onclick="window.location.reload()">
+              Retry
+            </button>
+          </section>
+          <Footer />
+        </>
+      ) : !data ? (
+        <>
+          <UtilityBar title={title} />
+          <section class="state">
+            <h1>Loading status</h1>
+            <p>Waiting for the first status check.</p>
+          </section>
+          <Footer />
+        </>
+      ) : data.monitors.length === 0 ? (
+        <>
+          <UtilityBar title={title} banner={banner} />
+          <section class="state">
+            <h1>No services configured</h1>
+            <p>The status page has no monitors yet.</p>
+            <p class="state-note">
+              Add monitors to <code>MONITORS_CONFIG</code> to start.
+            </p>
+          </section>
+          <Footer />
+        </>
+      ) : (
+        <>
+          <Header
+            title={data.title}
+            lastUpdated={now}
+            banner={banner}
+            verdict={verdict}
+            onset={onset}
+            incidents={data.incidents}
+          />
+
+          <div class="services">
+            {sortedMonitors.map(monitor => (
+              <MonitorCard
+                monitor={monitor}
+                stats={statsById[monitor.name]}
+                now={now}
+              />
+            ))}
+          </div>
+
+          <Footer />
+        </>
+      )
+    }
   </main>
 </Layout>
 
 <style>
-  .container {
-    max-width: min(960px, 90vw);
+  .page {
+    width: 100%;
+    max-width: 1040px;
     margin: 0 auto;
-    padding: var(--space-xl) var(--space-lg) var(--space-2xl);
+    padding: 0 clamp(16px, 4vw, 40px) var(--space-2xl);
   }
 
-  .monitors {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
+  .services {
+    min-width: 0;
   }
 
-  @media (min-width: 768px) {
-    .container {
-      padding: var(--space-2xl) var(--space-xl) var(--space-3xl);
-    }
-
-    .monitors {
-      gap: var(--space-lg);
-    }
+  .state {
+    max-width: 48rem;
+    padding: clamp(3rem, 10vw, 7rem) 0;
+    border-bottom: 1px solid var(--rule);
   }
 
-  .error-state,
-  .loading-state,
-  .empty-state {
-    text-align: center;
-    padding: var(--space-3xl) var(--space-lg);
-    background: var(--color-paper-2);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-rule);
-    margin-bottom: var(--space-xl);
-  }
-
-  .state-icon {
-    display: block;
-    margin: 0 auto var(--space-lg);
-    color: var(--color-ink-2);
-    opacity: 0.7;
-  }
-
-  .error-state h2,
-  .empty-state h2 {
-    font-size: var(--text-xl);
-    margin-bottom: var(--space-sm);
-    color: var(--color-ink);
-  }
-
-  .error-state p,
-  .empty-state p,
-  .loading-state p {
-    color: var(--color-ink-2);
-    margin-bottom: var(--space-lg);
-    max-width: 32ch;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .retry-button {
-    background: var(--color-accent);
-    color: var(--color-accent-ink);
-    border: none;
-    padding: var(--space-sm) var(--space-lg);
-    border-radius: var(--radius-sm);
+  .state h1 {
+    max-width: 14ch;
     font-family: var(--font-display);
-    font-weight: var(--font-semibold);
-    font-size: var(--text-sm);
-    cursor: pointer;
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
   }
 
-  .retry-button:hover {
-    opacity: 0.9;
+  .state p {
+    max-width: 52ch;
+    margin-top: var(--space-md);
+    font-size: var(--text-base);
+    line-height: 1.5;
+    color: var(--ink-2);
   }
 
-  .retry-button:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
+  .state-note {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm) !important;
+    color: var(--ink-3) !important;
   }
 
-  .loading-spinner {
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 2px solid var(--color-rule);
-    border-top-color: var(--color-accent);
-    border-radius: 50%;
-    margin: 0 auto var(--space-lg);
+  .state code {
+    font-family: var(--font-mono);
+    color: var(--ink);
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .loading-spinner {
-      animation: spin 1s linear infinite;
-    }
+  .retry {
+    margin-top: var(--space-lg);
+    padding: var(--space-xs) var(--space-md);
+    border: 1px solid var(--ink);
+    border-radius: var(--radius-xs);
+    background: transparent;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
   }
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
+  .retry:hover {
+    background: var(--ink);
+    color: var(--ground);
   }
 
-  @media (max-width: 640px) {
-    .container {
-      padding: var(--space-lg) var(--space-md);
-    }
-
-    .error-state,
-    .loading-state,
-    .empty-state {
-      padding: var(--space-2xl) var(--space-md);
-    }
-
-    .state-icon {
-      width: 36px;
-      height: 36px;
-      margin-bottom: var(--space-md);
-    }
-
-    .error-state h2,
-    .empty-state h2 {
-      font-size: var(--text-lg);
+  @media (max-width: 560px) {
+    .page {
+      padding-bottom: var(--space-xl);
     }
   }
 </style>

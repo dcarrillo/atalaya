@@ -1,0 +1,130 @@
+---
+import type { ApiDayStatus } from '@worker/types';
+import { getBarColor } from '../lib/uptime-bars.js';
+import { formatShortDate, summarizeDailyHistory } from '../lib/status.js';
+
+interface Props {
+  days: ApiDayStatus[];
+}
+
+const { days } = Astro.props;
+const summary = summarizeDailyHistory(days);
+const startLabel = days.length > 0 ? formatShortDate(days[0].date) : '90d ago';
+const meanText = summary.mean != null ? `${summary.mean.toFixed(2)}%` : '—';
+const below = summary.below.length;
+
+const summaryText = `${days.length}-day daily uptime. Mean ${meanText}. ${below} ${
+  below === 1 ? 'day' : 'days'
+} below 99.9%, ${summary.noDataDays} ${summary.noDataDays === 1 ? 'day' : 'days'} without data.`;
+---
+
+<figure class="uptime">
+  <figcaption class="sr-only">{summaryText}</figcaption>
+
+  <div class="bars" data-uptime tabindex="0" role="group" aria-label={summaryText}>
+    {
+      days.map(day => {
+        const color = getBarColor(day.uptimePercent);
+        return (
+          <span
+            class:list={['bar', `bar-${color}`]}
+            data-date={day.date}
+            data-value={day.uptimePercent == null ? '' : day.uptimePercent.toFixed(2)}
+            data-state={color}
+          />
+        );
+      })
+    }
+  </div>
+
+  <div class="scale" aria-hidden="true">
+    <span>{startLabel}</span>
+    <span>Today</span>
+  </div>
+
+  <div class="uptime-tip" role="status" aria-live="polite" hidden></div>
+</figure>
+
+<style>
+  .uptime {
+    position: relative;
+    margin-top: var(--space-xs);
+  }
+
+  .bars {
+    display: flex;
+    gap: 1px;
+    width: 100%;
+    height: 15px;
+    align-items: flex-end;
+    border-bottom: 1px solid var(--rule-strong);
+    padding-bottom: 2px;
+  }
+
+  .bar {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border-radius: 1px;
+    transform-origin: bottom;
+    transition:
+      opacity var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+
+  .bar-up {
+    background: var(--up);
+    opacity: 0.62;
+  }
+
+  .bar-degraded {
+    background: var(--maint);
+    opacity: 0.95;
+  }
+
+  .bar-down {
+    background: var(--down);
+    opacity: 1;
+  }
+
+  .bar-no-data {
+    background: var(--no-data);
+    opacity: 0.85;
+  }
+
+  .bar:hover {
+    opacity: 1;
+    transform: scaleY(1.2);
+  }
+
+  .scale {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3px;
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    color: var(--ink-3);
+  }
+
+  .uptime-tip {
+    position: absolute;
+    z-index: var(--z-tooltip);
+    padding: 4px 7px;
+    background: var(--ink);
+    color: var(--ground);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: 500;
+    white-space: nowrap;
+    border-radius: var(--radius-xs);
+    pointer-events: none;
+    transform: translate(-50%, -100%);
+    box-shadow: var(--shadow-tip);
+  }
+
+  @media (max-width: 560px) {
+    .bars {
+      height: 13px;
+    }
+  }
+</style>
