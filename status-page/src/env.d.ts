@@ -9,3 +9,11 @@ declare namespace Cloudflare {
     DB: D1Database;
   };
 }
+
+interface Window {
+  __atalayaTheme?: {
+    get: () => 'light' | 'dark';
+    set: (theme: 'light' | 'dark') => void;
+    clear: () => void;
+  };
+}

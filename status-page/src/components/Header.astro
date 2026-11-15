@@ -1,311 +1,118 @@
 ---
+import type { Incident } from '@worker/types';
+import type { Verdict } from '../lib/status.js';
+import { formatUtcTime } from '../lib/status.js';
+import UtilityBar from './UtilityBar.astro';
+import IncidentTimeline from './IncidentTimeline.astro';
+
 interface Props {
-  summary: {
-    total: number;
-    operational: number;
-    down: number;
-  };
-  lastUpdated: number;
   title: string;
-  banner?: {
-    url?: string;
-    link?: string;
-  };
+  lastUpdated: number;
+  banner?: { url?: string; link?: string };
+  verdict: Verdict;
+  onset?: { label: string; timestamp: number };
   incidents?: Incident[];
 }
 
-import type { Incident } from '@worker/types';
-import IncidentTimeline from './IncidentTimeline.astro';
-import { formatAbsoluteTime } from '../lib/header.js';
+const { title, lastUpdated, banner, verdict, onset, incidents } = Astro.props;
 
-const { summary, lastUpdated, title, banner, incidents } = Astro.props;
-const absoluteTime = formatAbsoluteTime(lastUpdated);
+const words = verdict.label.split(' ');
+const accent = words.length > 1 ? words.pop()! : words[0];
+const lead = words.join(' ');
 ---
 
-<header class="header">
-  <div class="header-top">
-    {banner?.url ? (
-      <div class="banner-container">
-        {banner.link ? (
-          <a href={banner.link} class="banner-link" aria-label={title} target="_self">
-            <img src={banner.url} alt={title} class="banner-image" />
-          </a>
-        ) : (
-          <img src={banner.url} alt={title} class="banner-image" />
-        )}
-      </div>
-    ) : (
-      <h1>{title}</h1>
-    )}
-    <button class="theme-toggle" aria-label="Toggle theme" title="Toggle light/dark theme">
-      <svg class="theme-icon sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="5"/>
-        <line x1="12" y1="1" x2="12" y2="3"/>
-        <line x1="12" y1="21" x2="12" y2="23"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-        <line x1="1" y1="12" x2="3" y2="12"/>
-        <line x1="21" y1="12" x2="23" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-      </svg>
-      <svg class="theme-icon moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>
-    </button>
-  </div>
+<header>
+  <UtilityBar title={title} lastUpdated={lastUpdated} banner={banner} />
 
-  <div class="header-status">
-    <span class="pulse-dot" aria-hidden="true"></span>
-    <span class="header-updated">Updated {absoluteTime}</span>
-    <span class="header-counts">
-      <span class="count-pill count-up">
-        <span class="count-dot" aria-hidden="true"></span>
-        {summary.operational} up
-      </span>
-      {summary.down > 0 && (
-        <span class="count-pill count-down">
-          <span class="count-dot" aria-hidden="true"></span>
-          {summary.down} down
-        </span>
-      )}
-    </span>
+  <div class="summary" data-tone={verdict.tone}>
+    <h1>
+      {lead}{lead ? ' ' : ''}<span class="accent">{accent}</span>
+    </h1>
+    <p class="detail">{verdict.detail}</p>
+    {onset ? (
+      <p class="onset">
+        {onset.label} since{' '}
+        <time datetime={new Date(onset.timestamp * 1000).toISOString()}>
+          {formatUtcTime(onset.timestamp)}
+        </time>
+      </p>
+    ) : null}
   </div>
 
   <IncidentTimeline incidents={incidents} />
 </header>
 
-<script>
-  (function() {
-    const toggle = document.querySelector('.theme-toggle');
-    if (!toggle) return;
-
-    toggle.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme');
-      const newTheme = current === 'light' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('atalaya-theme', newTheme);
-    });
-  })();
-</script>
-
 <style>
-  .header {
-    margin-bottom: var(--space-xl);
-    padding-bottom: var(--space-lg);
-    border-bottom: 1px solid var(--color-rule);
+  .summary {
+    padding: var(--space-lg) 0 var(--space-md);
+    --tone: var(--ink);
   }
 
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-md);
-    margin-bottom: var(--space-sm);
+  .summary[data-tone='ok'] {
+    --tone: var(--up);
+  }
+
+  .summary[data-tone='partial'],
+  .summary[data-tone='major'] {
+    --tone: var(--down);
+  }
+
+  .summary[data-tone='maintenance'] {
+    --tone: var(--maint);
+  }
+
+  .summary[data-tone='unknown'] {
+    --tone: var(--unknown);
   }
 
   h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-bold);
-    letter-spacing: -0.03em;
-    line-height: var(--leading-tight);
-    color: var(--color-ink);
-    margin: 0;
+    max-width: 24ch;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3.6vw, 2.75rem);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    color: var(--ink);
   }
 
-  .theme-toggle {
-    background: transparent;
-    border: 1px solid var(--color-rule);
-    border-radius: var(--radius-sm);
-    width: 2.25rem;
-    height: 2.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--color-ink-2);
-    flex-shrink: 0;
+  .accent {
+    color: var(--tone);
   }
 
-  .theme-toggle:hover {
-    border-color: var(--color-accent);
-    color: var(--color-ink);
-    background: var(--color-paper-2);
+  .detail {
+    max-width: 60ch;
+    margin-top: var(--space-xs);
+    font-size: var(--text-base);
+    line-height: 1.45;
+    color: var(--ink-2);
   }
 
-  .theme-toggle:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-  }
-
-  .banner-container {
-    display: flex;
-    align-items: center;
-    max-width: 100%;
-  }
-
-  .banner-link {
-    display: block;
-    text-decoration: none;
-  }
-
-  .banner-link:hover {
-    opacity: 0.85;
-  }
-
-  .banner-image {
-    max-height: 48px;
-    max-width: 100%;
-    object-fit: contain;
-  }
-
-  .theme-icon {
-    transition: opacity var(--dur-fast) var(--ease-out),
-                transform var(--dur-fast) var(--ease-out);
-  }
-
-  .theme-icon.moon {
-    position: absolute;
-    opacity: 0;
-    transform: scale(0.8);
-  }
-
-  .theme-icon.sun {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  [data-theme="dark"] .theme-icon.moon {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  [data-theme="dark"] .theme-icon.sun {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-
-  .header-status {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    flex-wrap: wrap;
-  }
-
-  .pulse-dot {
-    width: 0.375rem;
-    height: 0.375rem;
-    border-radius: 50%;
-    background: var(--color-up);
-    box-shadow: 0 0 0.375rem var(--color-up-glow);
-    flex-shrink: 0;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .pulse-dot {
-      animation: pulse 2s ease-in-out infinite;
-    }
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  .header-updated {
-    font-size: var(--text-sm);
-    color: var(--color-ink-2);
+  .onset {
+    margin-top: var(--space-2xs);
     font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.03em;
+    color: var(--ink-3);
+  }
+
+  .onset time {
+    color: var(--ink-2);
     font-variant-numeric: tabular-nums;
   }
 
-  .header-counts {
-    margin-left: auto;
-    display: flex;
-    gap: var(--space-xs);
-  }
-
-  .count-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2xs);
-    padding: var(--space-2xs) var(--space-sm);
-    font-size: var(--text-sm);
-    font-weight: var(--font-semibold);
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    border-radius: var(--radius-full);
-    text-transform: lowercase;
-  }
-
-  .count-up {
-    background: var(--color-up-bg);
-    color: var(--color-up);
-    border: 1px solid var(--color-up-border);
-  }
-
-  .count-down {
-    background: var(--color-down-bg);
-    color: var(--color-down);
-    border: 1px solid var(--color-down-border);
-  }
-
-  .count-dot {
-    width: 0.375rem;
-    height: 0.375rem;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .count-up .count-dot { background: var(--color-up); }
-
-  .count-down .count-dot { background: var(--color-down); }
-
-  @media (max-width: 640px) {
-    .header-top {
-      margin-bottom: var(--space-xs);
+  @media (max-width: 560px) {
+    .summary {
+      padding-top: var(--space-md);
     }
 
     h1 {
-      font-size: var(--text-xl);
+      max-width: 20ch;
+      font-size: clamp(1.6rem, 6.6vw, 2rem);
     }
 
-    .banner-image {
-      max-height: 40px;
-    }
-
-    .theme-toggle {
-      width: 2rem;
-      height: 2rem;
-    }
-
-    .header-status {
-      flex-wrap: wrap;
-      row-gap: var(--space-2xs);
-    }
-
-    .header-updated {
-      font-size: var(--text-xs);
-    }
-
-    .header-counts {
-      margin-left: 0;
-      width: 100%;
-    }
-
-    .count-pill {
-      padding: var(--space-2xs) var(--space-xs);
-      font-size: var(--text-xs);
-    }
-  }
-
-  @media (max-width: 375px) {
-    h1 {
-      font-size: var(--text-lg);
-    }
-
-    .banner-image {
-      max-height: 32px;
+    .detail {
+      font-size: var(--text-sm);
     }
   }
 </style>

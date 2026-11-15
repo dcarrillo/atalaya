@@ -3,8 +3,8 @@ import { UPTIME_WINDOW_DAYS } from '../../../src/constants.js';
 
 export function getBarColor(uptimePercent: number | undefined): string {
   if (uptimePercent == null) return 'no-data';
-  if (uptimePercent >= 99.8) return 'up';
-  if (uptimePercent >= 95) return 'degraded';
+  if (uptimePercent >= 99.9) return 'up';
+  if (uptimePercent >= 99.0) return 'degraded';
   return 'down';
 }
 
