@@ -2,7 +2,7 @@
 import type { ApiMonitorStatus } from '@worker/types';
 import type { TraceStats } from '../lib/status.js';
 import { formatDuration, formatShortDate, formatUtcTime, statusWord } from '../lib/status.js';
-import { formatUptime } from '../lib/monitor-card.js';
+import { formatUptime, formatUptimeNumber } from '../lib/monitor-card.js';
 import { uptimeWindowLabels } from '../lib/uptime-bars.js';
 import UptimeHistory from './UptimeHistory.astro';
 
@@ -72,7 +72,7 @@ const chartLabel = `${monitor.name}: ${state}. ${
     : 'No successful checks in the window.'
 } ${
   monitor.uptimePercent != null
-    ? `${uptimeLabel} ${monitor.uptimePercent.toFixed(2)} percent.`
+    ? `${uptimeLabel} ${formatUptimeNumber(monitor.uptimePercent)} percent.`
     : 'No uptime data.'
 }`;
 ---

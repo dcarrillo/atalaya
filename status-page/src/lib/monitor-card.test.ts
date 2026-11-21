@@ -12,4 +12,9 @@ describe('formatUptime', () => {
     expect(formatUptime(99.456)).toBe('99.46%');
     expect(formatUptime(0)).toBe('0.00%');
   });
+
+  it('keeps a near-100% value from rounding up to 100.00%', () => {
+    expect(formatUptime(99.998)).toBe('99.99%');
+    expect(formatUptime(99.999)).toBe('99.99%');
+  });
 });
